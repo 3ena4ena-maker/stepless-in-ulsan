@@ -51,12 +51,18 @@ body {
   overflow-x: hidden;
 }
 
-/* Header with STEPLESS IN ULSAN logo on left & minimalist KR | EN toggle on right */
+/* Header with STEPLESS IN ULSAN logo, 3 main tabs, and KR | EN toggle */
 .top {
-  padding: 20px 28px 0;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px 24px 10px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 14px;
+  position: relative;
+  z-index: 10;
 }
 
 .stepless-logo {
@@ -77,6 +83,39 @@ body {
 
 .stepless-logo:hover {
   color: #8EA85E;
+}
+
+/* Representative Main Tabs */
+.main-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  padding: 5px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+}
+
+.main-tab-btn {
+  font: inherit;
+  font-size: 15px;
+  color: var(--line);
+  background: transparent;
+  border: 0;
+  padding: 7px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.main-tab-btn:hover {
+  transform: translateY(-1px);
+}
+
+.main-tab-btn[aria-selected="true"] {
+  background: var(--line);
+  color: var(--paper);
 }
 
 .lang-switch {
@@ -115,8 +154,25 @@ body {
   font-size: 12px;
 }
 
+@media (max-width: 640px) {
+  .top {
+    padding: 16px 18px 8px;
+  }
+  .main-tabs {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .main-tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 7px 10px;
+    font-size: 14px;
+  }
+}
+
 .hero {
-  min-height: calc(100vh - 104px);
+  min-height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -136,6 +192,7 @@ body {
   border-radius: 50% 46% 54% 50%;
   opacity: 0.35;
   z-index: 0;
+  pointer-events: none;
 }
 
 .hero > *:not(.blob) {
@@ -145,7 +202,7 @@ body {
 
 .hero .whale {
   width: min(74vw, 330px);
-  margin-top: 36px;
+  margin-top: 28px;
 }
 
 svg {
@@ -220,7 +277,8 @@ svg {
 .chip:focus-visible,
 .go:focus-visible,
 .redo:focus-visible,
-.lang-btn:focus-visible {
+.lang-btn:focus-visible,
+.main-tab-btn:focus-visible {
   outline: 3px solid var(--mint);
   outline-offset: 3px;
 }
@@ -318,6 +376,117 @@ svg {
 .redo:hover {
   transform: translateY(-2px);
   background: var(--card);
+}
+
+/* Tab 2 (여행코스 추천) & Tab 3 (울산 주요일정표) Views */
+.tab-section {
+  min-height: calc(100vh - 120px);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 28px 22px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  animation: fade 0.35s ease;
+}
+
+.tab-section > *:not(.blob) {
+  position: relative;
+  z-index: 1;
+}
+
+.tab-subtitle {
+  margin: -12px 0 24px;
+  font-size: 16px;
+  opacity: 0.78;
+  word-break: keep-all;
+}
+
+.curated-list {
+  width: 100%;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  text-align: left;
+}
+
+.curated-item {
+  padding-bottom: 24px;
+  border-bottom: 1.5px dashed rgba(74, 59, 99, 0.22);
+}
+
+.curated-item:last-child {
+  border-bottom: 0;
+}
+
+.curated-badge {
+  display: inline-block;
+  font-size: 13px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--mint);
+  color: #2A2236;
+  margin-bottom: 8px;
+}
+
+.curated-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.curated-desc {
+  margin: 0 0 14px;
+  font-size: 15px;
+  opacity: 0.82;
+  line-height: 1.6;
+}
+
+.curated-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.flow-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+}
+
+.flow-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--mint);
+  color: #2A2236;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flow-arrow {
+  opacity: 0.45;
+  font-size: 14px;
+}
+
+.schedule-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+  opacity: 0.78;
 }
 
 /* Minimal, borderless footer links for Google AdSense verification */
