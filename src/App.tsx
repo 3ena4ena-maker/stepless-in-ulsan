@@ -1,7 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 type Lang = 'KR' | 'EN';
 type MainTab = 'home' | 'courses' | 'schedule';
+type CourseThemeFilter = 'all' | 'ocean' | 'garden' | 'night' | 'heritage';
+type ScheduleSeasonFilter = 'all_seasons' | 'all' | 'spring' | 'summer' | 'autumn' | 'winter';
 
 interface PlaceItem {
   id: string;
@@ -367,6 +369,45 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
   },
 ];
 
+// Parse pathname into MainTab + sub-filter state
+function parseRouteFromPathname(pathname: string): {
+  tab: MainTab;
+  courseFilter: CourseThemeFilter;
+  scheduleFilter: ScheduleSeasonFilter;
+} {
+  const clean = pathname.replace(/\/+$/, '') || '/';
+  if (clean === '/courses' || clean.startsWith('/courses/')) {
+    const sub = clean.split('/')[2] as CourseThemeFilter | undefined;
+    const validThemes: CourseThemeFilter[] = ['all', 'ocean', 'garden', 'night', 'heritage'];
+    return {
+      tab: 'courses',
+      courseFilter: sub && validThemes.includes(sub) ? sub : 'all',
+      scheduleFilter: 'all_seasons',
+    };
+  }
+  if (clean === '/schedule' || clean.startsWith('/schedule/')) {
+    const sub = clean.split('/')[2] as ScheduleSeasonFilter | undefined;
+    const validSeasons: ScheduleSeasonFilter[] = [
+      'all_seasons',
+      'all',
+      'spring',
+      'summer',
+      'autumn',
+      'winter',
+    ];
+    return {
+      tab: 'schedule',
+      courseFilter: 'all',
+      scheduleFilter: sub && validSeasons.includes(sub) ? sub : 'all_seasons',
+    };
+  }
+  return {
+    tab: 'home',
+    courseFilter: 'all',
+    scheduleFilter: 'all_seasons',
+  };
+}
+
 interface WhaleSvgContentProps {
   mood: 'smile' | 'happy';
 }
@@ -457,8 +498,10 @@ function WhaleInnerGroup({ mood }: WhaleSvgContentProps) {
 }
 
 export default function App() {
+  const initialRoute = parseRouteFromPathname(window.location.pathname);
+
   const [lang, setLang] = useState<Lang>('KR');
-  const [activeTab, setActiveTab] = useState<MainTab>('home');
+  const [activeTab, setActiveTab] = useState<MainTab>(initialRoute.tab);
 
   // Home curation states
   const [selectedTasteIds, setSelectedTasteIds] = useState<string[]>([]);
@@ -469,18 +512,62 @@ export default function App() {
   const [courseStops, setCourseStops] = useState<PlaceItem[]>([]);
   const [courseRenderKey, setCourseRenderKey] = useState<number>(0);
 
-  // Tab 2 (여행코스 추천) filter state
-  const [courseThemeFilter, setCourseThemeFilter] = useState<
-    'all' | 'ocean' | 'garden' | 'night' | 'heritage'
-  >('all');
+  // Tab 2 (추천 여행코스) filter state
+  const [courseThemeFilter, setCourseThemeFilter] = useState<CourseThemeFilter>(
+    initialRoute.courseFilter,
+  );
 
   // Tab 3 (울산 주요일정표) filter state
-  const [scheduleSeasonFilter, setScheduleSeasonFilter] = useState<
-    'all_seasons' | 'all' | 'spring' | 'summer' | 'autumn' | 'winter'
-  >('all_seasons');
+  const [scheduleSeasonFilter, setScheduleSeasonFilter] =
+    useState<ScheduleSeasonFilter>(initialRoute.scheduleFilter);
 
   const heroRef = useRef<HTMLElement | null>(null);
   const courseRef = useRef<HTMLElement | null>(null);
+
+  // Listen to browser Back/Forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const parsed = parseRouteFromPathname(window.location.pathname);
+      setActiveTab(parsed.tab);
+      setCourseThemeFilter(parsed.courseFilter);
+      setScheduleSeasonFilter(parsed.scheduleFilter);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Update document.title dynamically for each distinct page URL
+  useEffect(() => {
+    if (activeTab === 'courses') {
+      document.title =
+        lang === 'KR'
+          ? '울산 추천 여행코스 | STEPLESS IN ULSAN'
+          : 'Recommended Ulsan Courses | STEPLESS IN ULSAN';
+    } else if (activeTab === 'schedule') {
+      document.title =
+        lang === 'KR'
+          ? '울산 주요일정표 & 축제 안내 | STEPLESS IN ULSAN'
+          : 'Ulsan Major Schedule & Festivals | STEPLESS IN ULSAN';
+    } else {
+      document.title =
+        lang === 'KR'
+          ? '울산 여행 코스 추천 & 무장애 가이드 | STEPLESS IN ULSAN'
+          : 'Step-Free Ulsan Travel Guide | STEPLESS IN ULSAN';
+    }
+  }, [activeTab, lang]);
+
+  // Navigate to a specific URL path and sync state
+  const navigateToPath = (path: string, e?: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e) e.preventDefault();
+    if (window.location.pathname !== path) {
+      window.history.pushState({}, '', path);
+    }
+    const parsed = parseRouteFromPathname(path);
+    setActiveTab(parsed.tab);
+    setCourseThemeFilter(parsed.courseFilter);
+    setScheduleSeasonFilter(parsed.scheduleFilter);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const toggleTaste = (tasteId: string) => {
     setSelectedTasteIds((prev) =>
@@ -604,58 +691,41 @@ export default function App() {
           href="/"
           className="stepless-logo"
           title={lang === 'KR' ? 'STEPLESS IN ULSAN 홈으로 이동' : 'Go to STEPLESS IN ULSAN Home'}
-          onClick={(e) => {
-            e.preventDefault();
-            setActiveTab('home');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onClick={(e) => navigateToPath('/', e)}
         >
           <span>STEPLESS</span>
           <span>IN ULSAN</span>
         </a>
 
-        {/* Representative 3 Main Tabs */}
+        {/* Representative 3 Main Tabs with distinct URLs (/, /courses, /schedule) */}
         <nav
           className="main-tabs"
-          role="tablist"
           aria-label={lang === 'KR' ? '대표 메뉴 탭' : 'Main Navigation Tabs'}
         >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'home'}
+          <a
+            href="/"
+            aria-current={activeTab === 'home' ? 'page' : undefined}
             className="main-tab-btn"
-            onClick={() => {
-              setActiveTab('home');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onClick={(e) => navigateToPath('/', e)}
           >
             {lang === 'KR' ? '홈' : 'Home'}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'courses'}
+          </a>
+          <a
+            href="/courses"
+            aria-current={activeTab === 'courses' ? 'page' : undefined}
             className="main-tab-btn"
-            onClick={() => {
-              setActiveTab('courses');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onClick={(e) => navigateToPath('/courses', e)}
           >
-            {lang === 'KR' ? '여행코스 추천' : 'Recommended Courses'}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'schedule'}
+            {lang === 'KR' ? '추천 여행코스' : 'Recommended Courses'}
+          </a>
+          <a
+            href="/schedule"
+            aria-current={activeTab === 'schedule' ? 'page' : undefined}
             className="main-tab-btn"
-            onClick={() => {
-              setActiveTab('schedule');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onClick={(e) => navigateToPath('/schedule', e)}
           >
             {lang === 'KR' ? '울산 주요일정표' : 'Ulsan Schedule'}
-          </button>
+          </a>
         </nav>
 
         <div className="lang-switch" role="group" aria-label="Language Switcher">
@@ -678,7 +748,7 @@ export default function App() {
       </header>
 
       {/* ==========================================
-          TAB 1: 홈 (Interactive Whale Curation)
+          PAGE 1: 홈 (/)
          ========================================== */}
       {activeTab === 'home' && (
         <>
@@ -848,10 +918,13 @@ export default function App() {
       )}
 
       {/* ==========================================
-          TAB 2: 여행코스 추천 (Recommended Courses)
+          PAGE 2: 추천 여행코스 (/courses, /courses/:theme)
          ========================================== */}
       {activeTab === 'courses' && (
-        <section className="tab-section" aria-label={lang === 'KR' ? '여행코스 추천' : 'Recommended Courses'}>
+        <section
+          className="tab-section"
+          aria-label={lang === 'KR' ? '추천 여행코스' : 'Recommended Courses'}
+        >
           <div className="blob" />
           <div style={{ width: '140px', marginBottom: '4px' }}>
             <svg viewBox="0 0 215 170" role="img" aria-label="결 고래">
@@ -860,33 +933,53 @@ export default function App() {
           </div>
 
           <h1 className="ask-title">
-            {lang === 'KR' ? '울산 여행코스 추천' : 'Recommended Ulsan Courses'}
+            {lang === 'KR' ? '울산 추천 여행코스' : 'Recommended Ulsan Courses'}
           </h1>
           <p className="tab-subtitle">
             {lang === 'KR'
-              ? '계단과 턱 걱정 없이 편안하게 이어지는 울산 대표 4대 추천 코스예요.'
+              ? '계단과 턱 걱정 없이 편안하게 이어지는 울산 대표 4대 추천 여행코스예요.'
               : 'Four curated step-free itineraries connecting Ulsan’s signature spots.'}
           </p>
 
-          <div className="group" role="tablist">
+          <nav className="group" aria-label={lang === 'KR' ? '추천 여행코스 테마' : 'Course Themes'}>
             {[
-              { id: 'all' as const, KR: '전체 코스', EN: 'All' },
-              { id: 'ocean' as const, KR: '고래와 바다', EN: 'Whale & Ocean' },
-              { id: 'garden' as const, KR: '국가정원·대숲', EN: 'Garden & Bamboo' },
-              { id: 'night' as const, KR: '야경·해맞이', EN: 'Sunset & Night' },
-              { id: 'heritage' as const, KR: '역사·언양불고기', EN: 'History & Food' },
+              { id: 'all' as const, path: '/courses', KR: '전체 코스', EN: 'All' },
+              {
+                id: 'ocean' as const,
+                path: '/courses/ocean',
+                KR: '고래와 바다',
+                EN: 'Whale & Ocean',
+              },
+              {
+                id: 'garden' as const,
+                path: '/courses/garden',
+                KR: '국가정원·대숲',
+                EN: 'Garden & Bamboo',
+              },
+              {
+                id: 'night' as const,
+                path: '/courses/night',
+                KR: '야경·해맞이',
+                EN: 'Sunset & Night',
+              },
+              {
+                id: 'heritage' as const,
+                path: '/courses/heritage',
+                KR: '역사·언양불고기',
+                EN: 'History & Food',
+              },
             ].map((filter) => (
-              <button
+              <a
                 key={filter.id}
-                type="button"
+                href={filter.path}
                 className="chip"
-                aria-pressed={courseThemeFilter === filter.id}
-                onClick={() => setCourseThemeFilter(filter.id)}
+                aria-current={courseThemeFilter === filter.id ? 'page' : undefined}
+                onClick={(e) => navigateToPath(filter.path, e)}
               >
                 {filter[lang]}
-              </button>
+              </a>
             ))}
-          </div>
+          </nav>
 
           <div className="sep" />
 
@@ -916,10 +1009,13 @@ export default function App() {
       )}
 
       {/* ==========================================
-          TAB 3: 울산 주요일정표 (Ulsan Schedule)
+          PAGE 3: 울산 주요일정표 (/schedule, /schedule/:season)
          ========================================== */}
       {activeTab === 'schedule' && (
-        <section className="tab-section" aria-label={lang === 'KR' ? '울산 주요일정표' : 'Ulsan Schedule'}>
+        <section
+          className="tab-section"
+          aria-label={lang === 'KR' ? '울산 주요일정표' : 'Ulsan Schedule'}
+        >
           <div className="blob" />
           <div style={{ width: '140px', marginBottom: '4px' }}>
             <svg viewBox="0 0 215 170" role="img" aria-label="결 고래">
@@ -936,26 +1032,41 @@ export default function App() {
               : 'Explore Ulsan’s seasonal festivals, night illuminations, and whale cruise schedules.'}
           </p>
 
-          <div className="group" role="tablist">
+          <nav className="group" aria-label={lang === 'KR' ? '일정 계절별 보기' : 'Schedule Seasons'}>
             {[
-              { id: 'all_seasons' as const, KR: '전체 일정', EN: 'All Events' },
-              { id: 'all' as const, KR: '연중 상시', EN: 'Year-Round' },
-              { id: 'spring' as const, KR: '봄 (5월)', EN: 'Spring' },
-              { id: 'summer' as const, KR: '여름 (7~8월)', EN: 'Summer' },
-              { id: 'autumn' as const, KR: '가을 (9~10월)', EN: 'Autumn' },
-              { id: 'winter' as const, KR: '겨울·해맞이', EN: 'Winter Sunrise' },
+              { id: 'all_seasons' as const, path: '/schedule', KR: '전체 일정', EN: 'All Events' },
+              { id: 'all' as const, path: '/schedule/all', KR: '연중 상시', EN: 'Year-Round' },
+              { id: 'spring' as const, path: '/schedule/spring', KR: '봄 (5월)', EN: 'Spring' },
+              {
+                id: 'summer' as const,
+                path: '/schedule/summer',
+                KR: '여름 (7~8월)',
+                EN: 'Summer',
+              },
+              {
+                id: 'autumn' as const,
+                path: '/schedule/autumn',
+                KR: '가을 (9~10월)',
+                EN: 'Autumn',
+              },
+              {
+                id: 'winter' as const,
+                path: '/schedule/winter',
+                KR: '겨울·해맞이',
+                EN: 'Winter Sunrise',
+              },
             ].map((s) => (
-              <button
+              <a
                 key={s.id}
-                type="button"
+                href={s.path}
                 className="chip"
-                aria-pressed={scheduleSeasonFilter === s.id}
-                onClick={() => setScheduleSeasonFilter(s.id)}
+                aria-current={scheduleSeasonFilter === s.id ? 'page' : undefined}
+                onClick={(e) => navigateToPath(s.path, e)}
               >
                 {s[lang]}
-              </button>
+              </a>
             ))}
-          </div>
+          </nav>
 
           <div className="sep" />
 
