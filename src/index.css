@@ -1,109 +1,354 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Work+Sans:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap');
-@import "tailwindcss";
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --paper: #FFF5E1;
+  --paper2: #FFEBC9;
+  --line: #4A3B63;
+  --mint: #9ED8D0;
+  --blush: #FFB9B9;
+  --water: #4A3B63;
+  --card: rgba(255, 255, 255, 0.6);
+}
 
-@theme {
-  --font-sans: 'Pretendard Variable', 'Pretendard', 'Work Sans', system-ui, -apple-system, sans-serif;
-  --font-heading: 'Plus Jakarta Sans', 'Pretendard Variable', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Hanken Grotesk', system-ui, monospace;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #2A2236;
+    --paper2: #352B44;
+    --line: #F3E9FF;
+    --mint: #4E9C94;
+    --blush: #E58F9A;
+    --water: #F3E9FF;
+    --card: rgba(255, 255, 255, 0.07);
+  }
+}
 
-  /* Stepless Universe Signature Warm Editorial Palette + Bright Ulsan Whale & Coral Accents */
-  --color-canvas-warm: #FBFBF9;
-  --color-canvas-Subtle: #FAF8F5;
-  --color-border-stone: #E5E2DC;
-  --color-ink-primary: #11161B;
+:root[data-theme="dark"] {
+  --paper: #2A2236;
+  --paper2: #352B44;
+  --line: #F3E9FF;
+  --mint: #4E9C94;
+  --blush: #E58F9A;
+  --water: #F3E9FF;
+  --card: rgba(255, 255, 255, 0.07);
+}
 
-  /* Ulsan Whale Aqua-Cerulean (Bright East Sea & Whale Breeze) */
-  --color-ulsan-aqua: #2484B8;
-  --color-ulsan-aqua-dark: #1B6B96;
-  --color-ulsan-aqua-light: #EAF5FA;
-
-  /* Ulsan Industrial Sunset & Bridge Coral-Amber (Warm & Radiant, never dull grey) */
-  --color-ulsan-coral: #E57A44;
-  --color-ulsan-coral-light: #FDF1EB;
-
-  /* Stepless Busan Heritage Sage (Connecting the shared universe) */
-  --color-stepless-sage: #8EA85E;
-  --color-stepless-sage-dark: #6B853E;
-  --color-stepless-sage-light: #EFF4E6;
+*, *::before, *::after {
+  box-sizing: inherit;
 }
 
 html {
-  -webkit-overflow-scrolling: touch;
-  -webkit-tap-highlight-color: transparent;
-  width: 100%;
-  overflow-x: clip;
+  scroll-padding-top: env(safe-area-inset-top, 0px);
   scroll-behavior: smooth;
 }
 
 body {
-  width: 100%;
-  overflow-x: clip;
-  touch-action: manipulation;
-  background-color: #FBFBF9;
-  color: #11161B;
-  word-break: keep-all;
-  font-family: var(--font-sans);
+  margin: 0;
+  min-height: 100vh;
+  color: var(--line);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  font-family: "Gowun Dodum", "Apple SD Gothic Neo", sans-serif;
+  overflow-x: hidden;
 }
 
-#root {
-  width: 100%;
-  overflow-x: clip;
-  min-height: 100vh;
+/* Header with STEPLESS IN ULSAN logo on left & minimalist KR | EN toggle on right */
+.top {
+  padding: 20px 28px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stepless-logo {
+  display: inline-flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 0.92;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: -0.025em;
+  color: var(--line);
+  text-decoration: none;
+  user-select: none;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.stepless-logo:hover {
+  color: #8EA85E;
+}
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  user-select: none;
+}
+
+.lang-btn {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 4px 6px;
+  color: var(--line);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.18s ease, color 0.18s ease;
+}
+
+.lang-btn:hover {
+  opacity: 0.85;
+}
+
+.lang-btn.active {
+  opacity: 1;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+.lang-divider {
+  opacity: 0.3;
+  font-size: 12px;
+}
+
+.hero {
+  min-height: calc(100vh - 104px);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 22px 48px;
+  position: relative;
 }
 
-button, a, input, select, textarea, [role="button"], .smooth-transition {
-  transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform, opacity;
-  transition-duration: 180ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+.blob {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  width: min(86vw, 420px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  background: var(--mint);
+  border-radius: 50% 46% 54% 50%;
+  opacity: 0.35;
+  z-index: 0;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.hero > *:not(.blob) {
+  position: relative;
+  z-index: 1;
 }
 
-::-webkit-scrollbar-track {
-  background: #F4F2EE;
+.hero .whale {
+  width: min(74vw, 330px);
+  margin-top: 36px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #D0CCC4;
-  border-radius: 4px;
+svg {
+  overflow: visible;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #9E998E;
+.fl {
+  animation: fl 5s ease-in-out infinite;
 }
 
-*:focus-visible {
-  outline: 3px solid #2484B8;
-  outline-offset: 2px;
+@keyframes fl {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+.jump .fl {
+  animation: jump 1s cubic-bezier(0.3, 1.4, 0.5, 1) 1;
 }
 
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
+@keyframes jump {
+  40% {
+    transform: translateY(-40px) rotate(-5deg);
+  }
 }
 
-.animate-fade-in {
-  animation: fadeIn 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.ask-title {
+  margin: 12px 0 26px;
+  font-family: "Gowun Dodum", "Apple SD Gothic Neo", sans-serif;
+  font-weight: 400;
+  font-size: clamp(28px, 6.8vw, 46px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
 }
 
-.animate-float-slow {
-  animation: floatSlow 4s ease-in-out infinite;
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  max-width: 560px;
 }
 
-.no-scrollbar::-webkit-scrollbar {
+.chip {
+  font: inherit;
+  font-size: 16px;
+  color: var(--line);
+  cursor: pointer;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: var(--card);
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+
+.chip:hover {
+  transform: translateY(-2px);
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--line);
+  color: var(--paper);
+}
+
+.chip:focus-visible,
+.go:focus-visible,
+.redo:focus-visible,
+.lang-btn:focus-visible {
+  outline: 3px solid var(--mint);
+  outline-offset: 3px;
+}
+
+.sep {
+  width: 34px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--mint);
+  margin: 10px 0 16px;
+}
+
+.go {
+  margin-top: 18px;
+  font: inherit;
+  font-size: 18px;
+  color: var(--paper);
+  background: var(--line);
+  border: 0;
+  border-radius: 999px;
+  padding: 15px 38px;
+  cursor: pointer;
+  box-shadow: 6px 6px 0 var(--mint);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.go:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 var(--mint);
+}
+
+.go:active {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0 var(--mint);
+}
+
+.course {
   display: none;
+  padding: 10px 20px 60px;
+  max-width: 440px;
+  margin: 0 auto;
+  text-align: center;
 }
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+
+.course.show {
+  display: block;
+}
+
+.course h2 {
+  font-family: "Gowun Dodum", "Apple SD Gothic Neo", sans-serif;
+  font-weight: 400;
+  font-size: 26px;
+  margin: 0 0 6px;
+  word-break: keep-all;
+}
+
+.course svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.route {
+  stroke-dasharray: 2 11;
+  animation: fade 0.8s both;
+}
+
+.stop {
+  opacity: 0;
+  animation: fade 0.6s forwards;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.redo {
+  margin-top: 10px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--line);
+  background: none;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 26px;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.2s;
+}
+
+.redo:hover {
+  transform: translateY(-2px);
+  background: var(--card);
+}
+
+/* Minimal, borderless footer links for Google AdSense verification */
+.minimal-footer {
+  padding: 12px 20px 24px;
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.55;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.minimal-footer a {
+  color: var(--line);
+  text-decoration: none;
+}
+
+.minimal-footer a:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+  .stop {
+    opacity: 1;
+  }
 }

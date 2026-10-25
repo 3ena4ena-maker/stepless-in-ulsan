@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stepless in Ulsan</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&family=Gowun+Dodum&family=Plus+Jakarta+Sans:wght@800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --paper:#FFF5E1;--paper2:#FFEBC9;--line:#4A3B63;--mint:#9ED8D0;--blush:#FFB9B9;--water:#4A3B63;--card:rgba(255,255,255,.6);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#2A2236;--paper2:#352B44;--line:#F3E9FF;--mint:#4E9C94;--blush:#E58F9A;--card:rgba(255,255,255,.07)}}
+:root[data-theme="dark"]{--paper:#2A2236;--paper2:#352B44;--line:#F3E9FF;--mint:#4E9C94;--blush:#E58F9A;--card:rgba(255,255,255,.07)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{margin:0;color:var(--line);background:linear-gradient(180deg,var(--paper),var(--paper2));font-family:"Gowun Dodum","Apple SD Gothic Neo",sans-serif;overflow-x:hidden}
+.top{padding:20px 28px 0;display:flex;align-items:center}
+.stepless-logo{display:inline-flex;flex-direction:column;text-align:left;line-height:.92;font-family:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;font-weight:900;font-size:16px;letter-spacing:-.025em;color:var(--line);text-decoration:none;user-select:none;cursor:pointer;transition:color .18s ease}
+.stepless-logo:hover{color:#8EA85E}
+.hero{min-height:calc(100vh - 104px);display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 22px 48px;position:relative}
+.blob{position:absolute;top:6%;left:50%;width:min(86vw,420px);aspect-ratio:1;transform:translateX(-50%);background:var(--mint);border-radius:50% 46% 54% 50%;opacity:.35;z-index:0}
+.hero>*:not(.blob){position:relative;z-index:1}
+.hero .whale{width:min(74vw,330px);margin-top:36px}
+svg{overflow:visible}
+.fl{animation:fl 5s ease-in-out infinite}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.jump .fl{animation:jump 1s cubic-bezier(.3,1.4,.5,1) 1}
+@keyframes jump{40%{transform:translateY(-40px) rotate(-5deg)}}
+.ask-title{margin:12px 0 26px;font-family:"Gowun Dodum","Apple SD Gothic Neo",sans-serif;font-weight:400;font-size:clamp(30px,7.2vw,48px);line-height:1.2;letter-spacing:-.02em;word-break:keep-all}
+.group{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:0 0 14px;padding:0;border:0;max-width:520px}
+.chip{font:inherit;font-size:16px;color:var(--line);cursor:pointer;padding:9px 18px;border-radius:999px;border:2px solid var(--line);background:var(--card);transition:background .2s,color .2s,transform .15s}
+.chip:hover{transform:translateY(-2px)}
+.chip[aria-pressed="true"]{background:var(--line);color:var(--paper)}
+.chip:focus-visible,.go:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+.sep{width:34px;height:3px;border-radius:3px;background:var(--mint);margin:10px 0 16px}
+.go{margin-top:18px;font:inherit;font-size:18px;color:var(--paper);background:var(--line);border:0;border-radius:999px;padding:15px 38px;cursor:pointer;box-shadow:6px 6px 0 var(--mint);transition:transform .15s,box-shadow .15s}
+.go:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--mint)}
+.go:active{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--mint)}
+.course{display:none;padding:10px 20px 60px;max-width:420px;margin:0 auto;text-align:center}
+.course.show{display:block}
+.course h2{font-family:"Gowun Dodum","Apple SD Gothic Neo",sans-serif;font-weight:400;font-size:28px;margin:0 0 6px}
+.course svg{width:100%;height:auto;display:block}
+.route{stroke-dasharray:2 11;animation:fade .8s both}
+.stop{opacity:0;animation:fade .6s forwards}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.redo{margin-top:10px;font:inherit;font-size:16px;color:var(--line);background:none;border:2px solid var(--line);border-radius:999px;padding:10px 26px;cursor:pointer}
+.minimal-footer{padding:12px 20px 24px;text-align:center;font-size:13px;opacity:.55;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px}
+.minimal-footer a{color:var(--line);text-decoration:none}
+.minimal-footer a:hover{text-decoration:underline;opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}.stop{opacity:1}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a href="/" class="stepless-logo" title="STEPLESS IN ULSAN 홈으로 이동">
+    <span>STEPLESS</span>
+    <span>IN ULSAN</span>
+  </a>
+</header>
+
+<section class="hero" id="hero">
+  <div class="blob"></div>
+  <div class="whale" id="heroWhale"></div>
+  <h1 class="ask-title">어떤 울산 여행을 원해요?</h1>
+  <fieldset class="group" id="g1" aria-label="취향 10가지">
+    <button class="chip" aria-pressed="false">바다</button>
+    <button class="chip" aria-pressed="false">고래와 생태</button>
+    <button class="chip" aria-pressed="false">카페</button>
+    <button class="chip" aria-pressed="false">맛집</button>
+    <button class="chip" aria-pressed="false">숲과 정원</button>
+    <button class="chip" aria-pressed="false">역사와 문화</button>
+    <button class="chip" aria-pressed="false">사진 명소</button>
+    <button class="chip" aria-pressed="false">야경과 전망</button>
+    <button class="chip" aria-pressed="false">전통시장과 골목</button>
+    <button class="chip" aria-pressed="false">실내와 전시</button>
+  </fieldset>
+  <div class="sep"></div>
+  <fieldset class="group" id="g2" aria-label="누구와">
+    <button class="chip" aria-pressed="false">혼자</button>
+    <button class="chip" aria-pressed="false">친구와</button>
+    <button class="chip" aria-pressed="false">가족과</button>
+    <button class="chip" aria-pressed="false">연인과</button>
+  </fieldset>
+  <div class="sep"></div>
+  <fieldset class="group" id="g3" aria-label="일정 시간">
+    <button class="chip" aria-pressed="false" data-count="3">가볍게 반나절</button>
+    <button class="chip" aria-pressed="false" data-count="4">알차게 당일치기</button>
+    <button class="chip" aria-pressed="false" data-count="6">여유롭게 1박 2일</button>
+    <button class="chip" aria-pressed="false" data-count="8">느긋하게 2박 3일</button>
+  </fieldset>
+  <button class="go" id="go">내 코스 만들기</button>
+</section>
+
+<section class="course" id="course">
+  <h2 id="ct"></h2>
+  <div id="cm"></div>
+  <button class="redo" id="redo">다시 고르기</button>
+</section>
+
+<footer class="minimal-footer">
+  <span>© 2026 Stepless</span>
+  <span>·</span>
+  <a href="/about.html">서비스 소개</a>
+  <span>·</span>
+  <a href="/privacy.html">개인정보처리방침</a>
+  <span>·</span>
+  <a href="/terms.html">이용약관</a>
+  <span>·</span>
+  <a href="mailto:floreur88@gmail.com">문의</a>
+</footer>
+
+<script>
+var BODY="M26 96 C26 58 58 36 98 36 C138 36 168 58 168 94 C168 126 138 146 98 146 C58 146 26 130 26 96Z";
+function whale(m){
+  var x=64,y=90,e,mo;
+  if(m==='happy') e='<path d="M56 93 Q64 81 72 93" stroke="var(--line)" stroke-width="3.6" stroke-linecap="round" fill="none"/>';
+  else e='<ellipse cx="64" cy="90" rx="6" ry="6.6" fill="var(--line)"/><circle cx="66" cy="87.6" r="2.2" fill="var(--paper)"/><circle cx="62" cy="92.4" r="1" fill="var(--paper)" opacity=".8"/>';
+  mo=m==='happy'?'M34 108 C48 126 74 128 90 108':'M34 108 C48 121 72 123 86 109';
+  return '<svg viewBox="0 0 215 170" role="img" aria-label="결 고래"><g class="fl">'
+   +'<g fill="none" stroke="var(--water)" stroke-width="3" stroke-linecap="round"><path d="M98 30 v-16"/><path d="M86 32 q-6 -6 -6 -14"/><path d="M110 32 q6 -6 6 -14"/></g>'
+   +'<path d="M158 98 C178 96 186 82 182 66 M164 116 C186 112 196 88 190 62" fill="none" stroke="var(--line)" stroke-width="3" stroke-linecap="round"/>'
+   +'<path d="M186 62 C172 64 164 52 166 38 C174 48 181 51 186 51 C191 51 198 48 206 38 C208 52 200 64 186 62Z" fill="var(--mint)" stroke="var(--line)" stroke-width="3" stroke-linejoin="round"/>'
+   +'<path d="'+BODY+'" transform="translate(7 7)" fill="var(--mint)"/><path d="'+BODY+'" fill="var(--paper)" stroke="var(--line)" stroke-width="3"/>'
+   +'<path d="M96 114 C108 112 124 122 124 136 C110 136 98 128 96 114Z" fill="none" stroke="var(--line)" stroke-width="3" stroke-linejoin="round"/>'
+   +'<ellipse cx="'+(m==='happy'?100:94)+'" cy="104" rx="9.5" ry="6" fill="var(--blush)" opacity=".85"/>'
+   +e+'<path d="'+mo+'" stroke="var(--line)" stroke-width="3" fill="none" stroke-linecap="round"/></g></svg>';
+}
+var heroW=document.getElementById('heroWhale'); heroW.innerHTML=whale('smile');
+
+var P={
+ '바다':['대왕암공원','간절곶','일산해수욕장','주전 몽돌해변','강동 화암주상절리'],
+ '고래와 생태':['장생포 고래문화마을','고래생태체험관','장생포 고래박물관','태화강 생태관','울산대공원 동물원'],
+ '카페':['간절곶 해안 카페','태화강 국가정원 카페','정자해변 오션뷰 카페','성남동 감성 카페거리','삼산동 디저트 골목'],
+ '맛집':['언양불고기 거리','장생포 고래 거리','방어진 회센터','병영 막창골목','삼산 미식거리'],
+ '숲과 정원':['태화강 국가정원','십리대숲','울산대공원 장미원','선암호수공원','영남알프스 복합웰컴센터'],
+ '역사와 문화':['반구대 암각화','외고산 옹기마을','울산박물관','울산경상좌도병영성','언양읍성'],
+ '사진 명소':['간절곶 등대','대왕암 출렁다리','장생포 모노레일','십리대숲 은하수길','명선도'],
+ '야경과 전망':['울산대교 전망대','태화루 스카이워크','함월루 야경','명선도 야간조명','울산대 관람차'],
+ '전통시장과 골목':['신정시장 칼국수골목','태화종합시장','중앙전통시장 야시장','성남동 젊음의거리','남창 옹기종기시장'],
+ '실내와 전시':['울산시립미술관','장생포 문화창고','암각화박물관','울산과학관','FE01 재생복합문화공간']
+};
+document.querySelectorAll('#g1 .chip, #g2 .chip').forEach(function(c){
+  c.addEventListener('click',function(){c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')==='true'?'false':'true')});
+});
+document.querySelectorAll('#g3 .chip').forEach(function(c){
+  c.addEventListener('click',function(){
+    var was=c.getAttribute('aria-pressed')==='true';
+    document.querySelectorAll('#g3 .chip').forEach(function(o){o.setAttribute('aria-pressed','false')});
+    c.setAttribute('aria-pressed',was?'false':'true');
+  });
+});
+function sel(id){return Array.prototype.filter.call(document.querySelectorAll('#'+id+' .chip'),function(b){return b.getAttribute('aria-pressed')==='true'}).map(function(b){return b.textContent})}
+
+function build(){
+  var picks=sel('g1'); if(!picks.length) picks=['바다','고래와 생태'];
+  var who=sel('g2')[0];
+  var durBtn=document.querySelector('#g3 .chip[aria-pressed="true"]');
+  var durLabel=durBtn?durBtn.textContent:'';
+  var targetCount=durBtn?parseInt(durBtn.getAttribute('data-count'),10):4;
+  var stops=[],i=0,more=true;
+  while(stops.length<targetCount&&more){more=false;
+    picks.forEach(function(k){var p=P[k][i]; if(p&&stops.indexOf(p)<0&&stops.length<targetCount){stops.push(p)} if(P[k][i+1]) more=true});
+    i++;
+  }
+  var n=stops.length,H=n*120+90,pts=stops.map(function(s,j){return [j%2?240:80,60+j*120]});
+  var d='M'+pts[0][0]+' '+pts[0][1];
+  for(var j=1;j<n;j++){var a=pts[j-1],b=pts[j],my=(a[1]+b[1])/2;d+=' C'+a[0]+' '+my+' '+b[0]+' '+my+' '+b[0]+' '+b[1]}
+  var last=pts[n-1];
+  d+=' C'+last[0]+' '+(last[1]+50)+' '+(last[0]<160?200:120)+' '+(last[1]+50)+' '+(last[0]<160?200:120)+' '+(last[1]+60);
+  var s='<svg viewBox="0 0 320 '+H+'"><path class="route" d="'+d+'" fill="none" stroke="var(--line)" stroke-width="3.5" stroke-linecap="round"/>';
+  pts.forEach(function(p,j){
+    var left=p[0]<160;
+    s+='<g class="stop" style="animation-delay:'+(.3+j*.25)+'s"><circle cx="'+p[0]+'" cy="'+p[1]+'" r="11" fill="var(--mint)" stroke="var(--line)" stroke-width="3.5"/>'
+     +'<text x="'+(left?p[0]+22:p[0]-22)+'" y="'+(p[1]+6)+'" text-anchor="'+(left?'start':'end')+'" font-family="Gowun Dodum" font-size="17" fill="var(--line)">'+stops[j]+'</text></g>';
+  });
+  var wxEnd=last[0]<160?200:120;
+  s+='<g class="stop" style="animation-delay:'+(.3+n*.25)+'s"><svg x="'+(wxEnd-48)+'" y="'+(last[1]+54)+'" width="96" height="76" viewBox="0 0 215 170">'+whale('happy').replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')+'</svg></g></svg>';
+  document.getElementById('ct').textContent=[who,durLabel,'울산 코스'].filter(Boolean).join(' ');
+  document.getElementById('cm').innerHTML=s;
+}
+var go=document.getElementById('go'),course=document.getElementById('course');
+go.addEventListener('click',function(){
+  heroW.classList.remove('jump');void heroW.offsetWidth;heroW.classList.add('jump');
+  build();course.classList.add('show');
+  setTimeout(function(){course.scrollIntoView({behavior:'smooth'})},450);
+});
+document.getElementById('redo').addEventListener('click',function(){
+  document.getElementById('hero').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){course.classList.remove('show')},500);
+});
+</script>
+</body>
+</html>
