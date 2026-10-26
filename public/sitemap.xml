@@ -16,6 +16,26 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://stepless-in-ulsan.pages.dev/courses/gourmet/cafe</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stepless-in-ulsan.pages.dev/courses/gourmet/brunch</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stepless-in-ulsan.pages.dev/courses/gourmet/restaurant</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stepless-in-ulsan.pages.dev/courses/gourmet/dessert</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://stepless-in-ulsan.pages.dev/courses/attraction</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -24,6 +44,26 @@
     <loc>https://stepless-in-ulsan.pages.dev/courses/experience</loc>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://stepless-in-ulsan.pages.dev/courses/experience/tour</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stepless-in-ulsan.pages.dev/courses/experience/workshop</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stepless-in-ulsan.pages.dev/courses/experience/museum</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stepless-in-ulsan.pages.dev/courses/experience/activity</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://stepless-in-ulsan.pages.dev/schedule</loc>

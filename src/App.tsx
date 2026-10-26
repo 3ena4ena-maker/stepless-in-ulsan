@@ -4,6 +4,8 @@ import { useKtoCourseThumbs } from './services/ulsanTourApi';
 type Lang = 'KR' | 'EN';
 type MainTab = 'home' | 'courses' | 'schedule';
 type CourseCategoryTab = 'itinerary' | 'gourmet' | 'attraction' | 'experience';
+type GourmetSubTab = 'all' | 'cafe' | 'brunch' | 'restaurant' | 'dessert';
+type ExperienceSubTab = 'all' | 'tour' | 'workshop' | 'museum' | 'activity';
 type ScheduleSeasonFilter = 'all_seasons' | 'all' | 'spring' | 'summer' | 'autumn' | 'winter';
 
 interface PlaceItem {
@@ -40,10 +42,12 @@ interface ProgramDetailRow {
 interface CuratedCourseItem {
   id: string;
   category: CourseCategoryTab;
+  gourmetSub?: Exclude<GourmetSubTab, 'all'>;
+  experienceSub?: Exclude<ExperienceSubTab, 'all'>;
   badge: { KR: string; EN: string };
   title: { KR: string; EN: string };
   desc: { KR: string; EN: string };
-  stops: { KR: string[]; EN: string[] };
+  stops?: { KR: string[]; EN: string[] };
   ktoThumbKeys: string[];
   programInfo?: ProgramDetailRow[];
   programNote?: { KR: string; EN: string };
@@ -56,7 +60,6 @@ interface UlsanScheduleItem {
   title: { KR: string; EN: string };
   place: { KR: string; EN: string };
   desc: { KR: string; EN: string };
-  tip: { KR: string; EN: string };
   ktoThumbKeys: string[];
 }
 
@@ -213,13 +216,13 @@ const CURATED_COURSES: CuratedCourseItem[] = [
       EN: 'Jangsaengpo Whale Zone & Daewangam Pine Trail',
     },
     desc: {
-      KR: '고래박물관과 해저터널부터 단차 없는 대왕암 해송 데크길, 일산해변 오션뷰 카페까지 이어지는 울산 대표 당일치기 코스입니다.',
-      EN: 'Experience the underwater dolphin tunnel, elevator-linked monorail, and a zero-step pine boardwalk along the East Sea.',
+      KR: '고래박물관과 해저터널부터 푸른 대왕암 해송 산책길, 일산해변 오션뷰 카페까지 이어지는 울산 대표 당일치기 코스입니다.',
+      EN: 'Experience the underwater dolphin tunnel, monorail, and a scenic pine forest trail along the East Sea.',
     },
     ktoThumbKeys: ['whaleMuseum', 'whaleEco', 'daewangam', 'ilsanBeach'],
     stops: {
-      KR: ['장생포 고래박물관', '고래생태체험관', '대왕암공원 무장애데크', '일산해수욕장 카페'],
-      EN: ['Jangsaengpo Whale Museum', 'Whale Eco Tunnel', 'Daewangam Boardwalk', 'Ilsan Beach Cafe'],
+      KR: ['장생포 고래박물관', '고래생태체험관', '대왕암공원 해송산책로', '일산해수욕장 카페'],
+      EN: ['Jangsaengpo Whale Museum', 'Whale Eco Tunnel', 'Daewangam Pine Trail', 'Ilsan Beach Cafe'],
     },
   },
   {
@@ -231,8 +234,8 @@ const CURATED_COURSES: CuratedCourseItem[] = [
       EN: 'Taehwagang National Garden & Bamboo Starlight Course',
     },
     desc: {
-      KR: '부산에서 동해선 전철로 40분! 바퀴 빠짐 없는 십리대숲 평지 산책로와 무장애 전동관람차, 정원 앞 브런치를 즐기는 힐링 코스입니다.',
-      EN: 'Arrive via the step-free Donghae Line and stroll through flat bamboo groves and flower meadows.',
+      KR: '부산에서 동해선 전철로 편하게 도착해 초록빛 십리대숲 산책로와 전동관람차, 정원 앞 브런치를 즐기는 힐링 코스입니다.',
+      EN: 'Arrive via the Donghae Line and stroll through lush bamboo groves and seasonal flower meadows.',
     },
     ktoThumbKeys: ['taehwagangGarden', 'taehwagangRiver', 'taehwaru'],
     stops: {
@@ -249,8 +252,8 @@ const CURATED_COURSES: CuratedCourseItem[] = [
       EN: 'Ganjeolgot Coastal Plaza & Ulsan Bridge Sunset Course',
     },
     desc: {
-      KR: '탁 트인 간절곶 소망우체통 평지 광장과 명선도 야간조명, 엘리베이터로 오르는 울산대교 전망대 노을을 만끽하는 감성 코스입니다.',
-      EN: 'From the flat sunrise plaza of Ganjeolgot Cape to sparkling golden-hour views at Ulsan Bridge Observatory.',
+      KR: '탁 트인 간절곶 소망우체통 해안 광장과 명선도 야간조명, 울산대교 전망대 노을을 만끽하는 감성 코스입니다.',
+      EN: 'From the coastal sunrise plaza of Ganjeolgot Cape to sparkling golden-hour views at Ulsan Bridge Observatory.',
     },
     ktoThumbKeys: ['ganjeolgot', 'coastalCafe', 'ulsanBridge'],
     stops: {
@@ -267,8 +270,8 @@ const CURATED_COURSES: CuratedCourseItem[] = [
       EN: 'Bangudae Petroglyph Museum & Eonyang Bulgogi Course',
     },
     desc: {
-      KR: 'KTX 울산역에서 출발해 실내 무계단 슬로프로 꾸며진 암각화박물관과 1층 입식 언양 한우불고기, 외고산 옹기마을을 둘러봅니다.',
-      EN: 'Discover 7,000-year-old whale rock carvings in a ramp-equipped museum and savor authentic Eonyang Hanwoo Bulgogi.',
+      KR: 'KTX 울산역에서 출발해 선사시대 고래 바위그림을 만나는 암각화박물관과 언양 한우불고기, 외고산 옹기마을을 둘러봅니다.',
+      EN: 'Discover 7,000-year-old whale rock carvings at the Petroglyph Museum and savor authentic Eonyang Hanwoo Bulgogi.',
     },
     ktoThumbKeys: ['petroglyphMuseum', 'bangudae', 'eonyangBulgogi', 'onggiVillage'],
     stops: {
@@ -278,54 +281,552 @@ const CURATED_COURSES: CuratedCourseItem[] = [
   },
 
   // ==========================================
-  // 2. 식도락 (gourmet) - 추후 목록 추가·편집 가능
+  // 2. 식도락 (gourmet) - 장소 하나하나 개별 소개 (카페 / 브런치 / 음식점 / 디저트)
   // ==========================================
+  // [2-1. 카페 (cafe)]
   {
-    id: 'gourmet-eonyang-hanwoo',
+    id: 'gourmet-cafe-siseon310',
     category: 'gourmet',
-    badge: { KR: '식도락 · 울산 대표 한우미식', EN: 'Gourmet · Signature Hanwoo' },
+    gourmetSub: 'cafe',
+    badge: { KR: '식도락 · 카페', EN: 'Gourmet · Cafe' },
     title: {
-      KR: '언양·봉계 한우불고기 특구 & KTX 로컬 미식 로드',
-      EN: 'Eonyang Hanwoo Bulgogi & Local Dessert Trail',
+      KR: '시선310 간절곶점',
+      EN: 'Siseon 310 Ganjeolgot',
     },
     desc: {
-      KR: '신발을 벗지 않는 1층 평지 입식 테이블을 갖춘 언양 석쇠불고기 명가와 KTX 울산역 인근 대형 베이커리 카페를 잇는 식도락 코스입니다.',
-      EN: 'Savor charcoal-grilled Eonyang Hanwoo Bulgogi at step-free 1F restaurants followed by local artisanal bakeries.',
+      KR: '간절곶 바다 바로 앞에 자리해 통창 너머로 푸른 동해 파도와 수평선을 한눈에 담을 수 있는 대형 오션뷰 베이커리 카페입니다.',
+      EN: 'A spacious oceanfront bakery cafe right at Ganjeolgot Cape offering panoramic East Sea views through floor-to-ceiling windows.',
     },
-    ktoThumbKeys: ['eonyangBulgogi', 'coastalCafe'],
-    stops: {
-      KR: ['언양 한우불고기 거리', '언양전통시장 떡갈비', '자수정동굴 인근 대형카페'],
-      EN: ['Eonyang Bulgogi Street', 'Eonyang Market Tteokgalbi', 'Spacious Garden Bakery'],
-    },
+    ktoThumbKeys: ['coastalCafe'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 서생면 간절곶1길 25-6',
+          EN: '25-6, Ganjeolgot 1-gil, Seosaeng-myeon, Ulju-gun, Ulsan',
+        },
+      },
+      {
+        label: { KR: '특징', EN: 'Highlights' },
+        value: {
+          KR: '간절곶 앞바다 파노라마 오션뷰 · 야외 잔디 테라스 · 수제 베이커리 & 시그니처 커피',
+          EN: 'Panoramic ocean views, outdoor lawn terrace, artisanal bakery & signature coffee',
+        },
+      },
+    ],
   },
   {
-    id: 'gourmet-ocean-seafood',
+    id: 'gourmet-cafe-orto',
     category: 'gourmet',
-    badge: { KR: '식도락 · 동해 해산물 & 오션뷰 카페', EN: 'Gourmet · East Sea Seafood & Cafe' },
+    gourmetSub: 'cafe',
+    badge: { KR: '식도락 · 카페', EN: 'Gourmet · Cafe' },
     title: {
-      KR: '방어진 가자미물회·장생포 고래빵 & 해안 카페 투어',
-      EN: 'Bangeojin Seafood, Whale Bread & Oceanview Cafe Tour',
+      KR: '오르토커피',
+      EN: 'Orto Coffee',
     },
     desc: {
-      KR: '장생포 명물 고래빵 간식부터 방어진·일산해변의 신선한 활어회·물회, 그리고 간절곶·정자해변 1층 통창 오션뷰 카페까지 즐기는 미식 동선입니다.',
-      EN: 'Taste warm whale-shaped pastries, fresh East Sea flounder mulhoe, and oceanfront specialty coffee.',
+      KR: '울주군 서생면의 잔잔한 바다 풍경과 감각적인 정원 인테리어가 어우러져 여유롭게 커피를 즐기기 좋은 해안 카페입니다.',
+      EN: 'A serene coastal cafe in Seosaeng-myeon blending warm garden interiors with peaceful ocean views.',
     },
-    ktoThumbKeys: ['whaleVillage', 'ganjeolgotSeafood', 'coastalCafe'],
-    stops: {
-      KR: ['장생포 고래빵 본점', '방어진·일산 활어회센터', '정자·간절곶 오션뷰 카페', '신정시장 손칼국수 골목'],
-      EN: ['Jangsaengpo Whale Bread', 'Bangeojin Seafood Center', 'Oceanview Coastal Cafe', 'Sinjeong Market Noodles'],
+    ktoThumbKeys: ['ortoCoffee'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 서생면 해맞이로 일원',
+          EN: 'Haemaji-ro, Seosaeng-myeon, Ulju-gun, Ulsan',
+        },
+      },
+      {
+        label: { KR: '특징', EN: 'Highlights' },
+        value: {
+          KR: '차분한 정원 & 오션뷰 포토존 · 스페셜티 핸드드립 · 수제 디저트',
+          EN: 'Garden & oceanview photo zones, specialty drip coffee, and homemade desserts',
+        },
+      },
+    ],
+  },
+  {
+    id: 'gourmet-cafe-camonsi',
+    category: 'gourmet',
+    gourmetSub: 'cafe',
+    badge: { KR: '식도락 · 카페', EN: 'Gourmet · Cafe' },
+    title: {
+      KR: '카몬시',
+      EN: 'Camonsi Cafe',
     },
+    desc: {
+      KR: '이국적인 휴양지 감성의 인테리어와 진한 베트남식 연유라떼·코코넛커피를 맛볼 수 있는 울산 감성 카페입니다.',
+      EN: 'An exotic resort-style cafe in Ulsan famous for rich Vietnamese condensed-milk lattes and coconut coffee.',
+    },
+    ktoThumbKeys: ['camonsiCafe'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 남구 삼산동 일원',
+          EN: 'Samsan-dong, Nam-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '특징', EN: 'Highlights' },
+        value: {
+          KR: '코코넛 스무디 커피 · 연유라떼 · 이국적인 실내외 테라스 공간',
+          EN: 'Coconut smoothie coffee, condensed milk latte, and tropical-inspired terrace',
+        },
+      },
+    ],
+  },
+
+  // [2-2. 브런치 (brunch)]
+  {
+    id: 'gourmet-brunch-lamerpanji',
+    category: 'gourmet',
+    gourmetSub: 'brunch',
+    badge: { KR: '식도락 · 브런치', EN: 'Gourmet · Brunch' },
+    title: {
+      KR: '라메르판지',
+      EN: 'La Mer Panji',
+    },
+    desc: {
+      KR: '북구 판지해변 몽돌 바다 바로 앞에 위치한 초대형 오션뷰 브런치 & 베이커리 공간으로, 파도 소리를 들으며 브런치와 화덕피자를 즐길 수 있습니다.',
+      EN: 'A grand oceanfront brunch & bakery space right on Panji Pebble Beach serving brunch platters and wood-fired pizza.',
+    },
+    ktoThumbKeys: ['lamerPanji'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 북구 판지1길 30 (판지해변)',
+          EN: '30, Panji 1-gil, Buk-gu, Ulsan (Panji Beach)',
+        },
+      },
+      {
+        label: { KR: '대표메뉴', EN: 'Menu' },
+        value: {
+          KR: '오션뷰 브런치 플래터 · 화덕피자 · 파스타 · 천연발효 베이커리',
+          EN: 'Oceanview brunch platters, wood-fired pizza, pasta & sourdough bakery',
+        },
+      },
+    ],
+  },
+  {
+    id: 'gourmet-brunch-heydining',
+    category: 'gourmet',
+    gourmetSub: 'brunch',
+    badge: { KR: '식도락 · 브런치', EN: 'Gourmet · Brunch' },
+    title: {
+      KR: '헤이다이닝',
+      EN: 'Hey Dining',
+    },
+    desc: {
+      KR: '강동·정자 해안가에서 탁 트인 동해 바다를 바라보며 여유로운 브런치와 이탈리안 다이닝을 맛볼 수 있는 레스토랑입니다.',
+      EN: 'A coastal dining & brunch restaurant overlooking Gangdong and Jeongja Beach.',
+    },
+    ktoThumbKeys: ['heyDining'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 북구 동해안로 일원 (강동·정자해변)',
+          EN: 'Donghaean-ro, Buk-gu, Ulsan (Gangdong Beach)',
+        },
+      },
+      {
+        label: { KR: '대표메뉴', EN: 'Menu' },
+        value: {
+          KR: '해산물 파스타 · 브런치 플레이트 · 스테이크 & 리조또',
+          EN: 'Seafood pasta, brunch plates, steak & risotto',
+        },
+      },
+    ],
+  },
+  {
+    id: 'gourmet-brunch-ricopasto',
+    category: 'gourmet',
+    gourmetSub: 'brunch',
+    badge: { KR: '식도락 · 브런치', EN: 'Gourmet · Brunch' },
+    title: {
+      KR: '리코파스토',
+      EN: 'Rico Pasto',
+    },
+    desc: {
+      KR: '따스한 햇살이 들어오는 아늑한 공간에서 신선한 제철 재료로 만든 브런치와 생면 파스타를 선보이는 브런치 맛집입니다.',
+      EN: 'A warm, sun-lit brunch bistro serving seasonal brunch plates and handmade pasta.',
+    },
+    ktoThumbKeys: ['ricopasto'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 도심 브런치 거리',
+          EN: 'Downtown Ulsan',
+        },
+      },
+      {
+        label: { KR: '대표메뉴', EN: 'Menu' },
+        value: {
+          KR: '에그베네딕트 · 프렌치토스트 브런치 · 수제 파스타 & 뇨끼',
+          EN: 'Eggs Benedict, French toast brunch, handmade pasta & gnocchi',
+        },
+      },
+    ],
+  },
+
+  // [2-3. 음식점 (restaurant)]
+  {
+    id: 'gourmet-rest-eonyang-bulgogi',
+    category: 'gourmet',
+    gourmetSub: 'restaurant',
+    badge: { KR: '식도락 · 음식점', EN: 'Gourmet · Restaurant' },
+    title: {
+      KR: '언양 한우불고기',
+      EN: 'Eonyang Hanwoo Bulgogi',
+    },
+    desc: {
+      KR: '얇게 썬 최상급 암소 한우를 특제 양념에 재워 참숯 석쇠에 구워내는 울산 언양 지역의 대표 향토 음식점입니다.',
+      EN: 'Ulsan’s iconic culinary specialty featuring thinly sliced premium Hanwoo beef grilled over fragrant charcoal.',
+    },
+    ktoThumbKeys: ['eonyangBulgogi'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 언양읍 한우불고기 특구 (KTX 울산역 인접)',
+          EN: 'Eonyang Hanwoo Bulgogi District, Ulju-gun, Ulsan (Near KTX Ulsan Stn.)',
+        },
+      },
+      {
+        label: { KR: '대표메뉴', EN: 'Menu' },
+        value: {
+          KR: '언양 참숯 석쇠 한우불고기 · 한우 육회 · 수제 떡갈비',
+          EN: 'Charcoal-grilled Eonyang Hanwoo Bulgogi, Beef Tartare & Tteokgalbi',
+        },
+      },
+    ],
+  },
+  {
+    id: 'gourmet-rest-ganjeolgot-octopus',
+    category: 'gourmet',
+    gourmetSub: 'restaurant',
+    badge: { KR: '식도락 · 음식점', EN: 'Gourmet · Restaurant' },
+    title: {
+      KR: '간절곶 돌문어 해물요리',
+      EN: 'Ganjeolgot Stone Octopus Dining',
+    },
+    desc: {
+      KR: '간절곶 해안가 인근에서 동해안의 싱싱한 돌문어와 전복, 해산물을 듬뿍 넣은 매콤한 돌문어 볶음과 해물전골을 맛볼 수 있는 해물 전문 음식점입니다.',
+      EN: 'A coastal seafood restaurant near Ganjeolgot famous for tender East Sea stone octopus stir-fry and abalone hot pot.',
+    },
+    ktoThumbKeys: ['ganjeolgotOctopus'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 서생면 간절곶 해안 일원',
+          EN: 'Ganjeolgot Coast, Seosaeng-myeon, Ulju-gun, Ulsan',
+        },
+      },
+      {
+        label: { KR: '대표메뉴', EN: 'Menu' },
+        value: {
+          KR: '간절곶 돌문어 한상 · 해물전골 · 문어숙회',
+          EN: 'Stone octopus platter, seafood hot pot & boiled octopus',
+        },
+      },
+    ],
+  },
+  {
+    id: 'gourmet-rest-bangeojin-seafood',
+    category: 'gourmet',
+    gourmetSub: 'restaurant',
+    badge: { KR: '식도락 · 음식점', EN: 'Gourmet · Restaurant' },
+    title: {
+      KR: '방어진·간절곶 활어회 & 가자미물회',
+      EN: 'Bangeojin Live Sashimi & Flounder Mulhoe',
+    },
+    desc: {
+      KR: '울산 동해안 포구에서 당일 공수한 자연산 가자미로 만든 시원하고 새콤달콤한 울산식 물회와 싱싱한 모둠회를 즐기는 해산물 음식점입니다.',
+      EN: 'Enjoy Ulsan-style chilled spicy flounder soup (Mulhoe) and fresh daily-caught East Sea sashimi.',
+    },
+    ktoThumbKeys: ['ganjeolgotSeafood'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 동구 방어진항 · 울주군 서생면 해안가',
+          EN: 'Bangeojin Port (Dong-gu) & Seosaeng Coast (Ulju-gun), Ulsan',
+        },
+      },
+      {
+        label: { KR: '대표메뉴', EN: 'Menu' },
+        value: {
+          KR: '울산식 자연산 가자미물회 · 제철 모둠 활어회 · 매운탕',
+          EN: 'Wild flounder Mulhoe, seasonal live sashimi & spicy fish stew',
+        },
+      },
+    ],
+  },
+
+  // [2-4. 디저트 (dessert)]
+  {
+    id: 'gourmet-dessert-papaandson',
+    category: 'gourmet',
+    gourmetSub: 'dessert',
+    badge: { KR: '식도락 · 디저트', EN: 'Gourmet · Dessert' },
+    title: {
+      KR: '파파앤썬by랑콩뜨레',
+      EN: 'Papa & Son by Rencontrer',
+    },
+    desc: {
+      KR: '울산을 대표하는 제과명장 베이커리 랑콩뜨레의 디저트·베이커리 공간으로, 유기농 밀가루와 천연 발효종으로 구워낸 빵과 케이크를 만날 수 있습니다.',
+      EN: 'An artisanal bakery & dessert house by Ulsan’s master baker Rencontrer, crafting organic sourdough pastries and cakes.',
+    },
+    ktoThumbKeys: ['papaAndSon'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 · 북구 일원',
+          EN: 'Ulsan',
+        },
+      },
+      {
+        label: { KR: '대표디저트', EN: 'Desserts' },
+        value: {
+          KR: '망고무스 · 바게트 & 크루아상 · 수제 타르트 & 구움과자',
+          EN: 'Mango mousse, croissants, handmade tarts & baked financiers',
+        },
+      },
+    ],
+  },
+  {
+    id: 'gourmet-dessert-bonmilk',
+    category: 'gourmet',
+    gourmetSub: 'dessert',
+    badge: { KR: '식도락 · 디저트', EN: 'Gourmet · Dessert' },
+    title: {
+      KR: '본밀크 (BONMILK)',
+      EN: 'BONMILK',
+    },
+    desc: {
+      KR: '신선한 유기농 원유로 만든 진하고 부드러운 우유 소프트 아이스크림과 수제 요거트, 밀크티 등 우유 디저트를 전문으로 선보이는 디저트 가게입니다.',
+      EN: 'A specialty farm-milk dessert shop serving rich organic soft-serve ice cream, handmade yogurt, and milk tea.',
+    },
+    ktoThumbKeys: ['bonMilk'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 서생면 간절곶 일원',
+          EN: 'Ganjeolgot area, Seosaeng-myeon, Ulju-gun, Ulsan',
+        },
+      },
+      {
+        label: { KR: '대표디저트', EN: 'Desserts' },
+        value: {
+          KR: '유기농 목장 우유 아이스크림 · 수제 그릭요거트 · 밀크 푸딩',
+          EN: 'Organic farm-milk soft serve, handmade Greek yogurt & milk pudding',
+        },
+      },
+    ],
   },
 
   // ==========================================
-  // 3. 명소 (attraction) - 반구천을 누비다 등
+  // 3. 명소 (attraction) - 장소 하나하나 개별 소개
   // ==========================================
   {
-    id: 'attraction-bangucheon-program',
+    id: 'attraction-bangudae',
     category: 'attraction',
+    badge: { KR: '명소 · 국보 문화유산', EN: 'Attraction · National Treasure' },
+    title: {
+      KR: '대곡리 반구대 암각화',
+      EN: 'Bangudae Petroglyphs',
+    },
+    desc: {
+      KR: '약 7,000년 전 신석기·청동기 시대 사람들이 대곡천 절벽 바위면에 고래와 바다동물, 사슴, 호랑이 등 300여 점의 그림을 새겨 넣은 세계적인 선사시대 바위그림 유적(국보)입니다.',
+      EN: 'A 7,000-year-old prehistoric cliffside rock carving site (National Treasure) depicting over 300 whales, sea turtles, and land animals along Bangucheon Stream.',
+    },
+    ktoThumbKeys: ['bangudae'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 언양읍 반구대안길 285',
+          EN: '285, Bangudaean-gil, Eonyang-eup, Ulju-gun, Ulsan',
+        },
+      },
+      {
+        label: { KR: '주요볼거리', EN: 'Highlights' },
+        value: {
+          KR: '국보 대곡리 반구대 암각화 전망대 · 대곡천 숲길 산책로 · 집청정 & 반구서원',
+          EN: 'Bangudae Petroglyphs Viewpoint, Daegokcheon Forest Trail, Jipcheongjeong & Banguseowon',
+        },
+      },
+    ],
+  },
+  {
+    id: 'attraction-daewangam',
+    category: 'attraction',
+    badge: { KR: '명소 · 해안공원', EN: 'Attraction · Coastal Park' },
+    title: {
+      KR: '대왕암공원',
+      EN: 'Daewangam Park',
+    },
+    desc: {
+      KR: '100년 넘은 해송 1만 5천여 그루가 우거진 솔바람 산책길과 동해 바다 위 신비로운 바위섬 대왕암이 어우러진 울산 대표 해안 명소입니다.',
+      EN: 'Ulsan’s premier coastal park where a century-old forest of 15,000 sea pines meets dramatic East Sea rock formations.',
+    },
+    ktoThumbKeys: ['daewangam', 'daewangamPine'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 동구 등대로 95 (일산동)',
+          EN: '95, Deungdae-ro, Dong-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '주요볼거리', EN: 'Highlights' },
+        value: {
+          KR: '해송림 산책로 · 대왕교 & 대왕암 바위섬 · 울기등대 · 수국 & 맥문동 꽃길',
+          EN: 'Sea pine forest trail, Daewangam Rock Island, Ulgi Lighthouse & seasonal flower paths',
+        },
+      },
+    ],
+  },
+  {
+    id: 'attraction-taehwagang-garden',
+    category: 'attraction',
+    badge: { KR: '명소 · 국가정원', EN: 'Attraction · National Garden' },
+    title: {
+      KR: '태화강 국가정원 (십리대숲)',
+      EN: 'Taehwagang National Garden (Simnidaesup Bamboo Grove)',
+    },
+    desc: {
+      KR: '울산 도심을 가로지르는 태화강변을 따라 끝없이 펼쳐진 초록빛 십리대숲과 사계절 꽃이 피어나는 대한민국 제2호 국가정원입니다.',
+      EN: 'Korea’s 2nd National Garden featuring the lush 4km Simnidaesup Bamboo Grove, seasonal flower meadows, and nightly starlight paths.',
+    },
+    ktoThumbKeys: ['taehwagangGarden', 'taehwagangRiver'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 중구 태화강국가정원길 154',
+          EN: '154, Taehwagang-gukgajeongwon-gil, Jung-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '주요볼거리', EN: 'Highlights' },
+        value: {
+          KR: '십리대숲 산책길 · 십리대숲 은하수길(야간 점등) · 대나무생태원 · 계절 초화원',
+          EN: 'Simnidaesup Bamboo Grove, Starlight Night Path, Bamboo Eco Garden & Seasonal Meadows',
+        },
+      },
+    ],
+  },
+  {
+    id: 'attraction-ganjeolgot',
+    category: 'attraction',
+    badge: { KR: '명소 · 일출명소', EN: 'Attraction · Sunrise Cape' },
+    title: {
+      KR: '간절곶',
+      EN: 'Ganjeolgot Cape',
+    },
+    desc: {
+      KR: '한반도 육지에서 가장 먼저 해가 떠오르는 일출 명소로, 푸른 잔디 해안광장과 커다란 소망우체통, 하얀 간절곶 등대가 그림처럼 펼쳐집니다.',
+      EN: 'The earliest sunrise spot on the Korean mainland, iconic for its giant red Wish Postbox, white lighthouse, and coastal lawn plaza.',
+    },
+    ktoThumbKeys: ['ganjeolgot', 'ganjeolgotSunrise'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 서생면 대송리 (간절곶 해맞이광장)',
+          EN: 'Daesong-ri, Seosaeng-myeon, Ulju-gun, Ulsan',
+        },
+      },
+      {
+        label: { KR: '주요볼거리', EN: 'Highlights' },
+        value: {
+          KR: '소망우체통(실제 엽서 발송 가능) · 간절곶 등대 · 드라마하우스 해안산책로',
+          EN: 'Giant Wish Postbox (working mail service), Ganjeolgot Lighthouse & Coastal Trail',
+        },
+      },
+    ],
+  },
+  {
+    id: 'attraction-ulsan-bridge',
+    category: 'attraction',
+    badge: { KR: '명소 · 야경전망대', EN: 'Attraction · Observatory' },
+    title: {
+      KR: '울산대교 전망대',
+      EN: 'Ulsan Bridge Observatory',
+    },
+    desc: {
+      KR: '해발 203m 화정산 정상에 우뚝 솟아 국내 최장 단경간 현수교인 울산대교와 울산만, 도심 야경을 360도 파노라마로 내려다보는 전망 명소입니다.',
+      EN: 'Perched atop Mt. Hwajeong (203m), offering 360-degree panoramic sunset and night views of Ulsan Bridge and Ulsan Bay.',
+    },
+    ktoThumbKeys: ['ulsanBridge'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 동구 봉수로 155-1',
+          EN: '155-1, Bongsu-ro, Dong-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '주요볼거리', EN: 'Highlights' },
+        value: {
+          KR: '360도 실내 전망대 · 야외 옥상 테라스 · 울산 7대 야경 조망 (입장료 무료)',
+          EN: '360° indoor observatory, rooftop sunset terrace & sparkling night skyline (Free admission)',
+        },
+      },
+    ],
+  },
+  {
+    id: 'attraction-taehwaru',
+    category: 'attraction',
+    badge: { KR: '명소 · 전통누각', EN: 'Attraction · Historic Pavilion' },
+    title: {
+      KR: '태화루',
+      EN: 'Taehwaru Pavilion',
+    },
+    desc: {
+      KR: '진주 촉석루, 밀양 영남루와 함께 영남 3대 누각으로 꼽히는 울산의 대표 전통 누각으로, 태화강 절벽 위에서 시원한 강바람과 풍경을 감상할 수 있습니다.',
+      EN: 'One of the Three Great Pavilions of Yeongnam, standing gracefully on a cliff overlooking the Taehwagang River.',
+    },
+    ktoThumbKeys: ['taehwaru'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 중구 태화로 300',
+          EN: '300, Taehwa-ro, Jung-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '주요볼거리', EN: 'Highlights' },
+        value: {
+          KR: '전통 목조 누각 마루 휴식 · 태화강 조망 스카이워크 · 역사문화 전시실',
+          EN: 'Traditional wooden pavilion floor, river-view skywalk & history exhibition hall',
+        },
+      },
+    ],
+  },
+
+  // ==========================================
+  // 4. 체험 (experience) - 장소·프로그램 하나하나 개별 소개 (전체 / 투어 / 공방 / 미술관박물관 / 체험)
+  // ==========================================
+  // [4-1. 투어 (tour)]
+  {
+    id: 'experience-tour-bangucheon-program',
+    category: 'experience',
+    experienceSub: 'tour',
     badge: {
-      KR: '명소 · 반구천 일원 문화·자연사 탐방 프로그램',
-      EN: 'Attraction · Bangucheon Heritage & Nature Program',
+      KR: '체험 · 투어',
+      EN: 'Experience · Tour',
     },
     title: {
       KR: '반구천을 누비다',
@@ -391,86 +892,260 @@ const CURATED_COURSES: CuratedCourseItem[] = [
       KR: '※ 예약 취소 시에도 반드시 사전 연락 부탁드리며, 악천후 시에는 안전을 위해 일정이 조정될 수 있습니다.',
       EN: '※ Please notify us in advance if canceling a reservation. Schedules may be adjusted during inclement weather for safety.',
     },
-    stops: {
-      KR: ['울산암각화박물관 (출발)', '대곡리 반구대 암각화', '집청정 · 반구서원', '공룡발자국 화석'],
-      EN: ['Ulsan Petroglyph Museum (Start)', 'Bangudae Petroglyphs', 'Jipcheongjeong & Banguseowon', 'Dinosaur Footprints'],
-    },
   },
   {
-    id: 'attraction-east-coast',
-    category: 'attraction',
-    badge: { KR: '명소 · 바다·해맞이 랜드마크', EN: 'Attraction · Coastal Landmarks' },
+    id: 'experience-tour-whale-village',
+    category: 'experience',
+    experienceSub: 'tour',
+    badge: { KR: '체험 · 투어', EN: 'Experience · Tour' },
     title: {
-      KR: '대왕암공원 · 간절곶 · 명선도 동해안 3대 명소',
-      EN: 'Daewangam Park, Ganjeolgot & Myeongseondo Highlights',
+      KR: '장생포 고래문화마을 (모노레일 투어)',
+      EN: 'Jangsaengpo Whale Culture Village & Monorail Tour',
     },
     desc: {
-      KR: '백년 해송 숲과 기암괴석이 어우러진 대왕암공원 무장애 데크길, 한반도 첫 일출 간절곶 소망우체통, 신비로운 명선도까지 울산 핵심 해안 명소입니다.',
-      EN: 'Explore Ulsan’s top three coastal landmarks equipped with wide wooden boardwalks and flat plazas.',
+      KR: '1960~70년대 장생포 포경 어촌의 정겨운 골목 풍경을 그대로 재현한 마을로, 장생포 모노레일을 타고 마을과 바다를 하늘 위에서 내려다보는 투어를 즐길 수 있습니다.',
+      EN: 'Step back into a 1960s whaling village and ride the scenic monorail overlooking Jangsaengpo Port and the East Sea.',
     },
-    ktoThumbKeys: ['daewangam', 'daewangamBridge', 'ganjeolgot', 'ilsanBeach'],
-    stops: {
-      KR: ['대왕암공원 솔바람길', '일산해수욕장 평지해변', '간절곶 소망우체통 광장', '명선도 해안산책로'],
-      EN: ['Daewangam Pine Trail', 'Ilsan Beach Promenade', 'Ganjeolgot Wish Postbox', 'Myeongseondo Island'],
-    },
-  },
-  {
-    id: 'attraction-garden-skyline',
-    category: 'attraction',
-    badge: { KR: '명소 · 국가정원 & 야경 전망대', EN: 'Attraction · National Garden & Skyline' },
-    title: {
-      KR: '태화강 국가정원 십리대숲 & 울산대교 전망대',
-      EN: 'Taehwagang National Garden & Ulsan Bridge Observatory',
-    },
-    desc: {
-      KR: '낮에는 초록빛 대나무 숲과 계절 꽃밭을 평지로 산책하고, 해 질 녘에는 엘리베이터를 타고 올라가 반짝이는 울산 스카이라인을 감상합니다.',
-      EN: 'Walk through 100% flat bamboo groves by day and ride the elevator up Ulsan Bridge Observatory at sunset.',
-    },
-    ktoThumbKeys: ['taehwagangGarden', 'taehwaru', 'ulsanBridge'],
-    stops: {
-      KR: ['태화강 국가정원 초화원', '십리대숲 은하수길', '태화루 스카이워크', '울산대교 전망대'],
-      EN: ['Taehwagang Flower Garden', 'Bamboo Starlight Path', 'Taehwaru Skywalk', 'Ulsan Bridge Observatory'],
-    },
+    ktoThumbKeys: ['whaleVillage'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 남구 장생포고래로 244',
+          EN: '244, Jangsaengpogorae-ro, Nam-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '투어포인트', EN: 'Highlights' },
+        value: {
+          KR: '장생포 옛마을 골목투어 · 장생포 순환 모노레일 탑승 · 고래광장 & 수국정원',
+          EN: 'Retro village alley tour, panoramic monorail ride, Whale Plaza & Hydrangea Garden',
+        },
+      },
+    ],
   },
 
-  // ==========================================
-  // 4. 체험 (experience) - 추후 목록 추가·편집 가능
-  // ==========================================
+  // [4-2. 공방 (workshop)]
   {
-    id: 'experience-whale-monorail',
+    id: 'experience-workshop-onggi-village',
     category: 'experience',
-    badge: { KR: '체험 · 고래생태·모노레일·전동차', EN: 'Experience · Whale Eco & Monorail' },
+    experienceSub: 'workshop',
+    badge: { KR: '체험 · 공방', EN: 'Experience · Workshop' },
     title: {
-      KR: '장생포 고래생태체험관 & 태화강 무장애 전동관람차',
-      EN: 'Whale Underwater Tunnel, Monorail & Garden Electric Tram',
+      KR: '외고산 옹기마을 도자기·옹기 공방',
+      EN: 'Oegosan Onggi Village Pottery Workshop',
     },
     desc: {
-      KR: '수중 해저터널 돌고래 관람과 엘리베이터 직결 장생포 모노레일 탑승, 태화강 국가정원 휠체어 리프트 전동관람차까지 온 가족이 즐기는 체험입니다.',
-      EN: 'Meet dolphins in the underwater tunnel, ride the elevator-accessible monorail, and tour the garden by electric tram.',
+      KR: '전국 최대 규모의 전통 옹기 집산지인 외고산 옹기마을에서 장인의 손길을 따라 직접 흙을 만지고 물레를 돌리며 나만의 도자기 컵·화분을 만들어보는 공방입니다.',
+      EN: 'Korea’s largest traditional Onggi pottery village where visitors can shape their own clay cups and planters with master artisans.',
     },
-    ktoThumbKeys: ['whaleEco', 'whaleVillage', 'taehwagangGarden', 'ulsanZoo'],
-    stops: {
-      KR: ['고래생태체험관 해저터널', '장생포 모노레일 (엘리베이터)', '태화강 무장애 전동관람차', '울산대공원 동물원'],
-      EN: ['Dolphin Underwater Tunnel', 'Jangsaengpo Monorail', 'Accessible Garden Tram', 'Ulsan Grand Park Zoo'],
+    ktoThumbKeys: ['onggiVillage'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 온양읍 외고산3길 36 (동해선 망양역 인접)',
+          EN: '36, Oegosan 3-gil, Onyang-eup, Ulju-gun, Ulsan (Near Mangyang Stn.)',
+        },
+      },
+      {
+        label: { KR: '공방내용', EN: 'Workshop' },
+        value: {
+          KR: '전통 옹기 물레 성형 · 나만의 흙 인형·화분 만들기 (옹기아카데미관 상시 운영)',
+          EN: 'Pottery wheel shaping & handmade clay planter crafting at Onggi Academy',
+        },
+      },
+    ],
+  },
+
+  // [4-3. 미술관박물관 (museum)]
+  {
+    id: 'experience-museum-petroglyph',
+    category: 'experience',
+    experienceSub: 'museum',
+    badge: { KR: '체험 · 미술관박물관', EN: 'Experience · Museum & Art' },
+    title: {
+      KR: '울산암각화박물관',
+      EN: 'Ulsan Petroglyph Museum',
     },
+    desc: {
+      KR: '고래 모양을 본뜬 독특한 건축물 안에서 국보 대곡리 반구대 암각화와 천전리 명문과 암각화의 실물 모형, 입체 영상을 생생하게 관람할 수 있는 전문 박물관입니다.',
+      EN: 'A whale-inspired museum showcasing full-scale replicas and interactive 3D exhibits of the 7,000-year-old Bangudae Petroglyphs.',
+    },
+    ktoThumbKeys: ['petroglyphMuseum'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 울주군 두동면 반구대안길 254',
+          EN: '254, Bangudaean-gil, Dudong-myeon, Ulju-gun, Ulsan',
+        },
+      },
+      {
+        label: { KR: '관람안내', EN: 'Visitor Info' },
+        value: {
+          KR: '화~일 09:00~18:00 (월요일 휴관) · 관람료 무료',
+          EN: 'Tue–Sun 09:00–18:00 (Closed Mondays) · Free Admission',
+        },
+      },
+    ],
   },
   {
-    id: 'experience-onggi-museum',
+    id: 'experience-museum-whale',
     category: 'experience',
-    badge: { KR: '체험 · 전통옹기·실내 미디어아트', EN: 'Experience · Onggi Craft & Media Art' },
+    experienceSub: 'museum',
+    badge: { KR: '체험 · 미술관박물관', EN: 'Experience · Museum & Art' },
     title: {
-      KR: '외고산 옹기마을 도자기 체험 & 장생포 문화창고 미디어아트',
-      EN: 'Oegosan Onggi Pottery Workshop & Culture Depot Media Art',
+      KR: '장생포 고래박물관',
+      EN: 'Jangsaengpo Whale Museum',
     },
     desc: {
-      KR: '비 오는 날이나 무더운 날에도 쾌적한 전 층 엘리베이터 복합문화공간(장생포 문화창고·울산시립미술관)과 전통 옹기 만들기 체험을 즐깁니다.',
-      EN: 'Hands-on pottery making and immersive indoor media art galleries with full elevator access.',
+      KR: '국내 유일의 고래 전문 박물관으로, 거대한 실물 브라이드고래·범고래 골격 표본과 해양 생태 전시, 어린이 고래체험실을 갖추고 있습니다.',
+      EN: 'Korea’s only dedicated whale museum featuring giant real whale skeletons, marine history exhibits, and interactive halls.',
     },
-    ktoThumbKeys: ['onggiVillage', 'petroglyphMuseum', 'ulsanMuseum'],
-    stops: {
-      KR: ['외고산 옹기마을 공방체험', '장생포 문화창고 미디어아트', '울산암각화박물관 3D체험', '울산시립미술관'],
-      EN: ['Onggi Pottery Workshop', 'Culture Depot Media Art', 'Petroglyph 3D Museum', 'Ulsan Art Museum'],
+    ktoThumbKeys: ['whaleMuseum'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 남구 장생포고래로 244',
+          EN: '244, Jangsaengpogorae-ro, Nam-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '관람안내', EN: 'Visitor Info' },
+        value: {
+          KR: '화~일 09:00~18:00 (월요일 휴관) · 실물 고래 골격 & 해양생태 전시',
+          EN: 'Tue–Sun 09:00–18:00 (Closed Mondays) · Real whale skeletons & marine exhibits',
+        },
+      },
+    ],
+  },
+  {
+    id: 'experience-museum-ulsan',
+    category: 'experience',
+    experienceSub: 'museum',
+    badge: { KR: '체험 · 미술관박물관', EN: 'Experience · Museum & Art' },
+    title: {
+      KR: '울산박물관',
+      EN: 'Ulsan Museum',
     },
+    desc: {
+      KR: '울산대공원 입구에 자리 잡은 대표 역사박물관으로, 반구대 암각화 선사시대부터 대한민국 산업수도로 성장한 울산의 역사와 문화를 한눈에 만날 수 있습니다.',
+      EN: 'Located at the entrance of Ulsan Grand Park, chronicling Ulsan’s journey from prehistoric rock art to modern industrial capital.',
+    },
+    ktoThumbKeys: ['ulsanMuseum'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 남구 두왕로 277 (울산대공원 인접)',
+          EN: '277, Duwang-ro, Nam-gu, Ulsan (Next to Ulsan Grand Park)',
+        },
+      },
+      {
+        label: { KR: '관람안내', EN: 'Visitor Info' },
+        value: {
+          KR: '화~일 09:00~18:00 (월요일 휴관) · 상설전시 관람료 무료',
+          EN: 'Tue–Sun 09:00–18:00 (Closed Mondays) · Free Permanent Exhibition',
+        },
+      },
+    ],
+  },
+
+  // [4-4. 체험 (activity)]
+  {
+    id: 'experience-activity-whale-eco',
+    category: 'experience',
+    experienceSub: 'activity',
+    badge: { KR: '체험 · 체험', EN: 'Experience · Activity' },
+    title: {
+      KR: '고래생태체험관',
+      EN: 'Whale Eco Experience Center',
+    },
+    desc: {
+      KR: '우리나라 최초의 돌고래 수족관으로, 아치형 수중 해저터널을 걸으며 머리 위로 헤엄치는 돌고래와 바닷속 어류를 생생하게 관찰하는 체험관입니다.',
+      EN: 'Walk through an arched underwater glass tunnel as dolphins and marine life swim right overhead.',
+    },
+    ktoThumbKeys: ['whaleEco'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 남구 장생포고래로 248',
+          EN: '248, Jangsaengpogorae-ro, Nam-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '체험내용', EN: 'Experience' },
+        value: {
+          KR: '해저터널 돌고래 생태관람 · 해양생물 수족관 · 4D 입체영상관',
+          EN: 'Underwater dolphin tunnel, marine aquarium & 4D theater',
+        },
+      },
+    ],
+  },
+  {
+    id: 'experience-activity-daewangam-bridge',
+    category: 'experience',
+    experienceSub: 'activity',
+    badge: { KR: '체험 · 체험', EN: 'Experience · Activity' },
+    title: {
+      KR: '대왕암공원 해상 출렁다리',
+      EN: 'Daewangam Park Sea Suspension Bridge',
+    },
+    desc: {
+      KR: '대왕암공원 해안 산책로 햇개비에서 수루방까지 바다 위 기암괴석 사이를 중간 지지대 없이 303m 길이로 연결한 아찔하고 시원한 해상 출렁다리 체험입니다.',
+      EN: 'A thrilling 303m-long suspension bridge spanning directly over the crashing emerald waves and coastal cliffs of Daewangam Park.',
+    },
+    ktoThumbKeys: ['daewangamBridge'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 동구 일산동 대왕암공원 내 해안산책로',
+          EN: 'Inside Daewangam Park, Ilsan-dong, Dong-gu, Ulsan',
+        },
+      },
+      {
+        label: { KR: '이용안내', EN: 'Visitor Info' },
+        value: {
+          KR: '09:00~18:00 (매월 둘째 주 화요일 휴장) · 입장료 무료',
+          EN: '09:00–18:00 (Closed 2nd Tue of each month) · Free Admission',
+        },
+      },
+    ],
+  },
+  {
+    id: 'experience-activity-ulsan-zoo',
+    category: 'experience',
+    experienceSub: 'activity',
+    badge: { KR: '체험 · 체험', EN: 'Experience · Activity' },
+    title: {
+      KR: '울산대공원 동물원 & 생태여행관(나비원)',
+      EN: 'Ulsan Grand Park Zoo & Butterfly Eco Center',
+    },
+    desc: {
+      KR: '울산대공원 남문 일원에서 사막여우, 미어캣, 앵무새 등 귀여운 동물 친구들과 사계절 살아있는 나비가 날아다니는 나비식물원을 함께 만나는 자연 생태 체험 공간입니다.',
+      EN: 'Meet fennec foxes, meerkats, and tropical parrots alongside a year-round live butterfly greenhouse inside Ulsan Grand Park.',
+    },
+    ktoThumbKeys: ['ulsanZoo', 'ulsanGrandPark'],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 남구 대공원로 94 (울산대공원 남문)',
+          EN: '94, Daegongwon-ro, Nam-gu, Ulsan (South Gate of Ulsan Grand Park)',
+        },
+      },
+      {
+        label: { KR: '체험내용', EN: 'Experience' },
+        value: {
+          KR: '어린이 동물원 교감 관람 · 나비식물원 · 장미원 산책',
+          EN: 'Zoo animal encounters, Butterfly Botanical Garden & Rose Garden walk',
+        },
+      },
+    ],
   },
 ];
 
@@ -483,11 +1158,7 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
     place: { KR: '남구 장생포 고래문화마을·박물관 일원', EN: 'Jangsaengpo Whale Culture Zone' },
     desc: {
       KR: '고래 퍼레이드, 미디어아트 야간 퍼포먼스, 장생포 뮤직페스티벌이 펼쳐지는 울산 대표 가을 축제입니다.',
-      EN: 'Ulsan’s signature festival featuring parades, waterfront media art, and live music across flat harbor plazas.',
-    },
-    tip: {
-      KR: '무장애 팁: 고래박물관 광장 전 구간 평지 동선 · 모노레일 엘리베이터 상시 가동',
-      EN: 'Step-free tip: Flat harbor plaza & full elevator access to the monorail.',
+      EN: 'Ulsan’s signature festival featuring parades, waterfront media art, and live music across harbor plazas.',
     },
     ktoThumbKeys: ['whaleMuseum', 'whaleVillage'],
   },
@@ -498,12 +1169,8 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
     title: { KR: '태화강 국가정원 봄꽃축제 & 가을 국화전', EN: 'Taehwagang National Garden Flower Festival' },
     place: { KR: '중구 태화강 국가정원 초화원·십리대숲', EN: 'Taehwagang National Garden' },
     desc: {
-      KR: '봄에는 꽃양귀비·작약·수레국화가, 가을에는 노란 국화와 억새 물결이 평지 정원을 가득 채웁니다.',
-      EN: 'Millions of spring poppies, peonies, and autumn chrysanthemums along 100% flat riverside trails.',
-    },
-    tip: {
-      KR: '무장애 팁: 안내센터 휠체어·유모차 무료 대여 및 무장애 전동관람차 운행',
-      EN: 'Step-free tip: Free wheelchair/stroller rental & accessible electric garden tram.',
+      KR: '봄에는 꽃양귀비·작약·수레국화가, 가을에는 노란 국화와 억새 물결이 정원을 가득 채웁니다.',
+      EN: 'Millions of spring poppies, peonies, and autumn chrysanthemums along scenic riverside trails.',
     },
     ktoThumbKeys: ['taehwagangGarden', 'taehwagangRiver'],
   },
@@ -517,10 +1184,6 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '국내 최대 전통 옹기마을에서 흙 놀이 체험과 장인의 물레 시연, 옹기박물관 전시를 만날 수 있습니다.',
       EN: 'Hands-on clay workshops and traditional pottery exhibitions in Korea’s largest Onggi village.',
     },
-    tip: {
-      KR: '무장애 팁: 동해선 망양역 1번 출구 엘리베이터 하차 후 마을 입구 평지 진입',
-      EN: 'Step-free tip: Easy access from Donghae Line Mangyang Station Exit 1 elevator.',
-    },
     ktoThumbKeys: ['onggiVillage'],
   },
   {
@@ -532,10 +1195,6 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
     desc: {
       KR: '시원한 강바람이 부는 대나무 숲 야간 산책과 여름밤 야외 공연, 푸드트럭 마켓이 열립니다.',
       EN: 'Cool riverside bamboo night walks, outdoor concerts, and summer night markets.',
-    },
-    tip: {
-      KR: '무장애 팁: 경화마사토 포장으로 밤에도 유모차·휠체어 바퀴 빠짐 없이 안전한 이동',
-      EN: 'Step-free tip: Firm eco-paved bamboo paths ensure smooth rolling even at night.',
     },
     ktoThumbKeys: ['taehwagangGarden', 'whaleVillage'],
   },
@@ -549,10 +1208,6 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '화려한 거리 퍼레이드와 태화강 물 위를 수놓는 전통 낙화놀이, 대규모 드론·불꽃쇼가 펼쳐집니다.',
       EN: 'Grand street parades, traditional riverside fireflower illumination, and drone light shows.',
     },
-    tip: {
-      KR: '무장애 팁: 태화강 둔치 평지 관람석 및 교통약자 전용 관람 구역 운영',
-      EN: 'Step-free tip: Dedicated accessible viewing zones along the flat riverside plaza.',
-    },
     ktoThumbKeys: ['taehwagangRiver', 'taehwaru'],
   },
   {
@@ -562,12 +1217,8 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
     title: { KR: '간절곶 해맞이 축전 & 명선도 야간 라이트쇼', EN: 'Ganjeolgot New Year Sunrise & Myeongseondo Lights' },
     place: { KR: '울주군 서생면 간절곶 해맞이광장 · 진하해수욕장', EN: 'Ganjeolgot Sunrise Plaza & Jinha Beach' },
     desc: {
-      KR: '한반도에서 가장 먼저 해가 뜨는 간절곶 평지 광장에서 새해 소망 콘서트와 드론쇼를 감상합니다.',
-      EN: 'Welcome the earliest sunrise on the Korean peninsula on a wide, step-free coastal plaza.',
-    },
-    tip: {
-      KR: '무장애 팁: 장애인 주차장에서 소망우체통 해안데크까지 단차 0cm 직결',
-      EN: 'Step-free tip: Zero-step connection from accessible parking to Wish Postbox deck.',
+      KR: '한반도에서 가장 먼저 해가 뜨는 간절곶 광장에서 새해 소망 콘서트와 드론쇼를 감상합니다.',
+      EN: 'Welcome the earliest sunrise on the Korean peninsula at Ganjeolgot Coastal Plaza.',
     },
     ktoThumbKeys: ['ganjeolgotSunrise', 'ganjeolgot'],
   },
@@ -581,10 +1232,6 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '일몰 후 매일 밤 반딧불처럼 빛나는 십리대숲 은하수길(무료)과 동해 바다를 가르는 고래바다여행선이 상시 운영됩니다.',
       EN: 'Free nightly firefly illumination in the bamboo forest and scenic coastal whale cruises.',
     },
-    tip: {
-      KR: '무장애 팁: 은하수길 전 구간 경사 0° 평지 · 고래바다여행선 1층 휠체어 승선 지원',
-      EN: 'Step-free tip: 0° flat starlight path & wheelchair boarding assistance on 1F cruise deck.',
-    },
     ktoThumbKeys: ['whaleEco', 'taehwagangGarden'],
   },
 ];
@@ -593,20 +1240,48 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
 function parseRouteFromPathname(pathname: string): {
   tab: MainTab;
   courseCategory: CourseCategoryTab;
+  gourmetSub: GourmetSubTab;
+  experienceSub: ExperienceSubTab;
   scheduleFilter: ScheduleSeasonFilter;
 } {
   const clean = pathname.replace(/\/+$/, '') || '/';
   if (clean === '/courses' || clean.startsWith('/courses/')) {
-    const sub = clean.split('/')[2] as CourseCategoryTab | undefined;
+    const parts = clean.split('/');
+    const sub = parts[2] as CourseCategoryTab | undefined;
+    const sub2 = parts[3] as string | undefined;
     const validCategories: CourseCategoryTab[] = [
       'itinerary',
       'gourmet',
       'attraction',
       'experience',
     ];
+    const validGourmetSubs: GourmetSubTab[] = [
+      'all',
+      'cafe',
+      'brunch',
+      'restaurant',
+      'dessert',
+    ];
+    const validExperienceSubs: ExperienceSubTab[] = [
+      'all',
+      'tour',
+      'workshop',
+      'museum',
+      'activity',
+    ];
     return {
       tab: 'courses',
       courseCategory: sub && validCategories.includes(sub) ? sub : 'itinerary',
+      gourmetSub:
+        sub === 'gourmet' && sub2 && validGourmetSubs.includes(sub2 as GourmetSubTab)
+          ? (sub2 as GourmetSubTab)
+          : 'all',
+      experienceSub:
+        sub === 'experience' &&
+        sub2 &&
+        validExperienceSubs.includes(sub2 as ExperienceSubTab)
+          ? (sub2 as ExperienceSubTab)
+          : 'all',
       scheduleFilter: 'all_seasons',
     };
   }
@@ -623,12 +1298,16 @@ function parseRouteFromPathname(pathname: string): {
     return {
       tab: 'schedule',
       courseCategory: 'itinerary',
+      gourmetSub: 'all',
+      experienceSub: 'all',
       scheduleFilter: sub && validSeasons.includes(sub) ? sub : 'all_seasons',
     };
   }
   return {
     tab: 'home',
     courseCategory: 'itinerary',
+    gourmetSub: 'all',
+    experienceSub: 'all',
     scheduleFilter: 'all_seasons',
   };
 }
@@ -828,19 +1507,21 @@ function CuratedCourseRow({
             <p className="program-note">{course.programNote[lang]}</p>
           )}
 
-          <div className="curated-flow">
-            {course.stops[lang].map((stopName, idx) => (
-              <React.Fragment key={stopName}>
-                <span className="flow-step">
-                  <span className="flow-num">{idx + 1}</span>
-                  <span>{stopName}</span>
-                </span>
-                {idx < course.stops[lang].length - 1 && (
-                  <span className="flow-arrow">→</span>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+          {course.stops && course.stops[lang].length > 0 && (
+            <div className="curated-flow">
+              {course.stops[lang].map((stopName, idx) => (
+                <React.Fragment key={stopName}>
+                  <span className="flow-step">
+                    <span className="flow-num">{idx + 1}</span>
+                    <span>{stopName}</span>
+                  </span>
+                  {idx < course.stops![lang].length - 1 && (
+                    <span className="flow-arrow">→</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </article>
@@ -866,6 +1547,14 @@ export default function App() {
   const [courseCategory, setCourseCategory] = useState<CourseCategoryTab>(
     initialRoute.courseCategory,
   );
+  // 식도락 하위 카테고리: 카페 / 브런치 / 음식점 / 디저트
+  const [gourmetSub, setGourmetSub] = useState<GourmetSubTab>(
+    initialRoute.gourmetSub,
+  );
+  // 체험 하위 카테고리: 전체 / 투어 / 공방 / 미술관박물관 / 체험
+  const [experienceSub, setExperienceSub] = useState<ExperienceSubTab>(
+    initialRoute.experienceSub,
+  );
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
 
   // Tab 3 (울산 주요일정표) filter state
@@ -881,6 +1570,8 @@ export default function App() {
       const parsed = parseRouteFromPathname(window.location.pathname);
       setActiveTab(parsed.tab);
       setCourseCategory(parsed.courseCategory);
+      setGourmetSub(parsed.gourmetSub);
+      setExperienceSub(parsed.experienceSub);
       setExpandedCourseId(null);
       setScheduleSeasonFilter(parsed.scheduleFilter);
     };
@@ -918,8 +1609,8 @@ export default function App() {
     } else {
       document.title =
         lang === 'KR'
-          ? '울산 여행 코스 추천 & 무장애 가이드 | STEPLESS IN ULSAN'
-          : 'Step-Free Ulsan Travel Guide | STEPLESS IN ULSAN';
+          ? '울산 여행 코스 추천 | STEPLESS IN ULSAN'
+          : 'Ulsan Travel Course Guide | STEPLESS IN ULSAN';
     }
   }, [activeTab, courseCategory, lang]);
 
@@ -932,6 +1623,8 @@ export default function App() {
     const parsed = parseRouteFromPathname(path);
     setActiveTab(parsed.tab);
     setCourseCategory(parsed.courseCategory);
+    setGourmetSub(parsed.gourmetSub);
+    setExperienceSub(parsed.experienceSub);
     setExpandedCourseId(null);
     setScheduleSeasonFilter(parsed.scheduleFilter);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1044,9 +1737,16 @@ export default function App() {
     routePath += ` C${last[0]} ${last[1] + 50} ${wxEnd} ${last[1] + 50} ${wxEnd} ${last[1] + 60}`;
   }
 
-  const filteredCuratedCourses = CURATED_COURSES.filter(
-    (c) => c.category === courseCategory,
-  );
+  const filteredCuratedCourses = CURATED_COURSES.filter((c) => {
+    if (c.category !== courseCategory) return false;
+    if (courseCategory === 'gourmet') {
+      return gourmetSub === 'all' ? true : c.gourmetSub === gourmetSub;
+    }
+    if (courseCategory === 'experience') {
+      return experienceSub === 'all' ? true : c.experienceSub === experienceSub;
+    }
+    return true;
+  });
 
   const filteredSchedules = ULSAN_SCHEDULES.filter((s) =>
     scheduleSeasonFilter === 'all_seasons' ? true : s.season === scheduleSeasonFilter,
@@ -1721,6 +2421,110 @@ export default function App() {
             ))}
           </nav>
 
+          {courseCategory === 'gourmet' && (
+            <nav
+              className="sub-group"
+              aria-label={
+                lang === 'KR' ? '식도락 세부 카테고리' : 'Gourmet Sub-categories'
+              }
+            >
+              {[
+                {
+                  id: 'all' as const,
+                  path: '/courses/gourmet',
+                  KR: '전체',
+                  EN: 'All',
+                },
+                {
+                  id: 'cafe' as const,
+                  path: '/courses/gourmet/cafe',
+                  KR: '카페',
+                  EN: 'Cafes',
+                },
+                {
+                  id: 'brunch' as const,
+                  path: '/courses/gourmet/brunch',
+                  KR: '브런치',
+                  EN: 'Brunch',
+                },
+                {
+                  id: 'restaurant' as const,
+                  path: '/courses/gourmet/restaurant',
+                  KR: '음식점',
+                  EN: 'Restaurants',
+                },
+                {
+                  id: 'dessert' as const,
+                  path: '/courses/gourmet/dessert',
+                  KR: '디저트',
+                  EN: 'Desserts',
+                },
+              ].map((sub) => (
+                <a
+                  key={sub.id}
+                  href={sub.path}
+                  className="sub-chip"
+                  aria-current={gourmetSub === sub.id ? 'page' : undefined}
+                  onClick={(e) => navigateToPath(sub.path, e)}
+                >
+                  {sub[lang]}
+                </a>
+              ))}
+            </nav>
+          )}
+
+          {courseCategory === 'experience' && (
+            <nav
+              className="sub-group"
+              aria-label={
+                lang === 'KR' ? '체험 세부 카테고리' : 'Experience Sub-categories'
+              }
+            >
+              {[
+                {
+                  id: 'all' as const,
+                  path: '/courses/experience',
+                  KR: '전체',
+                  EN: 'All',
+                },
+                {
+                  id: 'tour' as const,
+                  path: '/courses/experience/tour',
+                  KR: '투어',
+                  EN: 'Tours',
+                },
+                {
+                  id: 'workshop' as const,
+                  path: '/courses/experience/workshop',
+                  KR: '공방',
+                  EN: 'Workshops',
+                },
+                {
+                  id: 'museum' as const,
+                  path: '/courses/experience/museum',
+                  KR: '미술관박물관',
+                  EN: 'Museums & Art',
+                },
+                {
+                  id: 'activity' as const,
+                  path: '/courses/experience/activity',
+                  KR: '체험',
+                  EN: 'Activities',
+                },
+              ].map((sub) => (
+                <a
+                  key={sub.id}
+                  href={sub.path}
+                  className="sub-chip"
+                  aria-current={experienceSub === sub.id ? 'page' : undefined}
+                  onClick={(e) => navigateToPath(sub.path, e)}
+                >
+                  {sub[lang]}
+                </a>
+              ))}
+            </nav>
+          )}
+
           <div className="sep" />
 
           <div className="curated-list">
@@ -1814,8 +2618,6 @@ export default function App() {
                 />
                 <div className="schedule-meta">
                   <span>📍 {item.place[lang]}</span>
-                  <span>·</span>
-                  <span>♿ {item.tip[lang]}</span>
                 </div>
               </article>
             ))}

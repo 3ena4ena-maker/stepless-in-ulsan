@@ -124,8 +124,48 @@ export const ULSAN_KTO_SPOT_THUMBS: Record<string, KtoThumbItem> = {
   },
   coastalCafe: {
     contentId: '2848964',
-    label: { KR: '간절곶 오션뷰 카페', EN: 'Ganjeolgot Coastal Cafe' },
+    label: { KR: '시선310 간절곶점', EN: 'Siseon 310 Ganjeolgot Cafe' },
     imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/75/2848675_image2_1.jpg',
+  },
+  ortoCoffee: {
+    contentId: '2848946',
+    label: { KR: '오르토커피', EN: 'Orto Coffee' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/05/2848705_image2_1.jpg',
+  },
+  camonsiCafe: {
+    contentId: '2845298',
+    label: { KR: '카몬시 카페', EN: 'Camonsi Cafe' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/94/2845294_image2_1.jpg',
+  },
+  lamerPanji: {
+    contentId: '2832528',
+    label: { KR: '라메르판지 브런치', EN: 'La Mer Panji' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/16/2832516_image2_1.jpg',
+  },
+  ricopasto: {
+    contentId: '2848922',
+    label: { KR: '리코파스토 브런치', EN: 'Rico Pasto Brunch' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/34/2848834_image2_1.jpg',
+  },
+  heyDining: {
+    contentId: '2844809',
+    label: { KR: '헤이다이닝', EN: 'Hey Dining' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/04/2844804_image2_1.jpg',
+  },
+  ganjeolgotOctopus: {
+    contentId: '2848971',
+    label: { KR: '간절곶 돌문어', EN: 'Ganjeolgot Octopus Dining' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/25/2848625_image2_1.jpg',
+  },
+  papaAndSon: {
+    contentId: '2837082',
+    label: { KR: '파파앤썬by랑콩뜨레', EN: 'Papa & Son Bakery' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/76/2837076_image2_1.jpg',
+  },
+  bonMilk: {
+    contentId: '2848940',
+    label: { KR: '본밀크 디저트', EN: 'BONMILK Dessert' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/34/2848734_image2_1.jpg',
   },
   onggiVillage: {
     contentId: '128208',

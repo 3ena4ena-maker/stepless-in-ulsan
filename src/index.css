@@ -279,7 +279,42 @@ svg {
   color: var(--paper);
 }
 
+/* 식도락 하위 카테고리 탭 (카페 · 브런치 · 음식점 · 디저트) */
+.sub-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: -2px 0 10px;
+  padding: 0;
+}
+
+.sub-chip {
+  font: inherit;
+  font-size: 14px;
+  color: var(--line);
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.8px dashed var(--line);
+  background: var(--paper);
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s, color 0.2s, transform 0.15s, border-style 0.15s;
+}
+
+.sub-chip:hover {
+  transform: translateY(-1.5px);
+}
+
+.sub-chip[aria-current="page"] {
+  background: var(--mint);
+  border-style: solid;
+  font-weight: 700;
+}
+
 .chip:focus-visible,
+.sub-chip:focus-visible,
 .go:focus-visible,
 .redo:focus-visible,
 .lang-btn:focus-visible,
