@@ -647,9 +647,10 @@ svg {
 
 /* Cute "부산에서 울산 오는 길" Illustrated Guide on Main Page (Borderless) */
 .how-to-come {
+  width: 100%;
   max-width: 780px;
-  margin: 12px auto 44px;
-  padding: 18px 22px 10px;
+  margin: 4px auto 16px;
+  padding: 6px 10px 10px;
   text-align: center;
   display: flex;
   flex-direction: column;

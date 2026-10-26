@@ -1120,170 +1120,7 @@ export default function App() {
          ========================================== */}
       {activeTab === 'home' && (
         <>
-          <section className="hero" id="hero" ref={heroRef}>
-            <div className="blob" />
-            <div
-              className={`whale ${isJumping ? 'jump' : ''}`}
-              id="heroWhale"
-              onAnimationEnd={() => setIsJumping(false)}
-            >
-              <svg
-                viewBox="0 0 215 170"
-                role="img"
-                aria-label={lang === 'KR' ? '결 고래' : 'Gyeol Whale'}
-              >
-                <WhaleInnerGroup mood="smile" />
-              </svg>
-            </div>
-
-            <h1 className="ask-title">
-              {lang === 'KR'
-                ? '어떤 울산 여행을 원해요?'
-                : 'What kind of Ulsan trip do you want?'}
-            </h1>
-
-            <fieldset
-              className="group"
-              id="g1"
-              aria-label={lang === 'KR' ? '취향 10가지' : '10 Travel Vibes'}
-            >
-              {TASTE_OPTIONS.map((taste) => {
-                const pressed = selectedTasteIds.includes(taste.id);
-                return (
-                  <button
-                    key={taste.id}
-                    type="button"
-                    className="chip"
-                    aria-pressed={pressed}
-                    onClick={() => toggleTaste(taste.id)}
-                  >
-                    {taste[lang]}
-                  </button>
-                );
-              })}
-            </fieldset>
-
-            <div className="sep" />
-
-            <fieldset
-              className="group"
-              id="g2"
-              aria-label={lang === 'KR' ? '누구와' : 'Companion'}
-            >
-              {COMPANION_OPTIONS.map((companion) => {
-                const pressed = selectedCompanionIds.includes(companion.id);
-                return (
-                  <button
-                    key={companion.id}
-                    type="button"
-                    className="chip"
-                    aria-pressed={pressed}
-                    onClick={() => toggleCompanion(companion.id)}
-                  >
-                    {companion[lang]}
-                  </button>
-                );
-              })}
-            </fieldset>
-
-            <div className="sep" />
-
-            <fieldset
-              className="group"
-              id="g3"
-              aria-label={lang === 'KR' ? '일정 시간' : 'Trip Duration'}
-            >
-              {DURATION_OPTIONS.map((item) => {
-                const pressed = selectedDurationId === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className="chip"
-                    aria-pressed={pressed}
-                    onClick={() => toggleDuration(item.id)}
-                  >
-                    {item[lang]}
-                  </button>
-                );
-              })}
-            </fieldset>
-
-            <button type="button" className="go" id="go" onClick={handleBuildCourse}>
-              {lang === 'KR' ? '내 코스 만들기' : 'Build My Course'}
-            </button>
-          </section>
-
-          <section
-            className={`course ${showCourse ? 'show' : ''}`}
-            id="course"
-            ref={courseRef}
-          >
-            <h2 id="ct">{computedCourseTitle}</h2>
-            <div id="cm" key={courseRenderKey}>
-              {n > 0 && (
-                <svg viewBox={`0 0 320 ${svgHeight}`}>
-                  <path
-                    className="route"
-                    d={routePath}
-                    fill="none"
-                    stroke="var(--line)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-                  {pts.map((p, j) => {
-                    const isLeft = p[0] < 160;
-                    const stop = courseStops[j];
-                    return (
-                      <g
-                        key={stop.id}
-                        className="stop"
-                        style={{ animationDelay: `${0.3 + j * 0.25}s` }}
-                      >
-                        <circle
-                          cx={p[0]}
-                          cy={p[1]}
-                          r="11"
-                          fill="var(--mint)"
-                          stroke="var(--line)"
-                          strokeWidth="3.5"
-                        />
-                        <text
-                          x={isLeft ? p[0] + 20 : p[0] - 20}
-                          y={p[1] + 6}
-                          textAnchor={isLeft ? 'start' : 'end'}
-                          fontFamily="Gowun Dodum"
-                          fontSize={lang === 'KR' ? '17' : '15'}
-                          fill="var(--line)"
-                        >
-                          {stop[lang]}
-                        </text>
-                      </g>
-                    );
-                  })}
-                  <g
-                    className="stop"
-                    style={{ animationDelay: `${0.3 + n * 0.25}s` }}
-                  >
-                    <svg
-                      x={wxEnd - 48}
-                      y={lastY + 54}
-                      width="96"
-                      height="76"
-                      viewBox="0 0 215 170"
-                    >
-                      <WhaleInnerGroup mood="happy" />
-                    </svg>
-                  </g>
-                </svg>
-              )}
-            </div>
-            <button type="button" className="redo" id="redo" onClick={handleRedo}>
-              {lang === 'KR' ? '다시 고르기' : 'Pick Again'}
-            </button>
-          </section>
-
-          {/* 귀여운 일러스트로 안내하는 부산 → 울산 오는 3가지 방법 */}
+          {/* 1. 상단: 부산 → 울산 오는 3가지 방법 */}
           <section
             className="how-to-come"
             aria-label={
@@ -1292,7 +1129,6 @@ export default function App() {
                 : '3 Ways to Get to Ulsan from Busan'
             }
           >
-            <div className="sep" />
             <h2 className="how-title">
               {lang === 'KR'
                 ? '부산에서 울산, 어떻게 올까요?'
@@ -1655,6 +1491,171 @@ export default function App() {
                 </p>
               </div>
             </div>
+            <div className="sep" style={{ marginTop: '24px', marginBottom: '0' }} />
+          </section>
+
+          {/* 2. 큰 고래와 함께하는 '어떤 울산 여행을 원해요?' 코스 만들기 섹션 */}
+          <section className="hero" id="hero" ref={heroRef}>
+            <div className="blob" />
+            <div
+              className={`whale ${isJumping ? 'jump' : ''}`}
+              id="heroWhale"
+              onAnimationEnd={() => setIsJumping(false)}
+            >
+              <svg
+                viewBox="0 0 215 170"
+                role="img"
+                aria-label={lang === 'KR' ? '결 고래' : 'Gyeol Whale'}
+              >
+                <WhaleInnerGroup mood="smile" />
+              </svg>
+            </div>
+
+            <h1 className="ask-title">
+              {lang === 'KR'
+                ? '어떤 울산 여행을 원해요?'
+                : 'What kind of Ulsan trip do you want?'}
+            </h1>
+
+            <fieldset
+              className="group"
+              id="g1"
+              aria-label={lang === 'KR' ? '취향 10가지' : '10 Travel Vibes'}
+            >
+              {TASTE_OPTIONS.map((taste) => {
+                const pressed = selectedTasteIds.includes(taste.id);
+                return (
+                  <button
+                    key={taste.id}
+                    type="button"
+                    className="chip"
+                    aria-pressed={pressed}
+                    onClick={() => toggleTaste(taste.id)}
+                  >
+                    {taste[lang]}
+                  </button>
+                );
+              })}
+            </fieldset>
+
+            <div className="sep" />
+
+            <fieldset
+              className="group"
+              id="g2"
+              aria-label={lang === 'KR' ? '누구와' : 'Companion'}
+            >
+              {COMPANION_OPTIONS.map((companion) => {
+                const pressed = selectedCompanionIds.includes(companion.id);
+                return (
+                  <button
+                    key={companion.id}
+                    type="button"
+                    className="chip"
+                    aria-pressed={pressed}
+                    onClick={() => toggleCompanion(companion.id)}
+                  >
+                    {companion[lang]}
+                  </button>
+                );
+              })}
+            </fieldset>
+
+            <div className="sep" />
+
+            <fieldset
+              className="group"
+              id="g3"
+              aria-label={lang === 'KR' ? '일정 시간' : 'Trip Duration'}
+            >
+              {DURATION_OPTIONS.map((item) => {
+                const pressed = selectedDurationId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="chip"
+                    aria-pressed={pressed}
+                    onClick={() => toggleDuration(item.id)}
+                  >
+                    {item[lang]}
+                  </button>
+                );
+              })}
+            </fieldset>
+
+            <button type="button" className="go" id="go" onClick={handleBuildCourse}>
+              {lang === 'KR' ? '내 코스 만들기' : 'Build My Course'}
+            </button>
+          </section>
+
+          <section
+            className={`course ${showCourse ? 'show' : ''}`}
+            id="course"
+            ref={courseRef}
+          >
+            <h2 id="ct">{computedCourseTitle}</h2>
+            <div id="cm" key={courseRenderKey}>
+              {n > 0 && (
+                <svg viewBox={`0 0 320 ${svgHeight}`}>
+                  <path
+                    className="route"
+                    d={routePath}
+                    fill="none"
+                    stroke="var(--line)"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                  />
+                  {pts.map((p, j) => {
+                    const isLeft = p[0] < 160;
+                    const stop = courseStops[j];
+                    return (
+                      <g
+                        key={stop.id}
+                        className="stop"
+                        style={{ animationDelay: `${0.3 + j * 0.25}s` }}
+                      >
+                        <circle
+                          cx={p[0]}
+                          cy={p[1]}
+                          r="11"
+                          fill="var(--mint)"
+                          stroke="var(--line)"
+                          strokeWidth="3.5"
+                        />
+                        <text
+                          x={isLeft ? p[0] + 20 : p[0] - 20}
+                          y={p[1] + 6}
+                          textAnchor={isLeft ? 'start' : 'end'}
+                          fontFamily="Gowun Dodum"
+                          fontSize={lang === 'KR' ? '17' : '15'}
+                          fill="var(--line)"
+                        >
+                          {stop[lang]}
+                        </text>
+                      </g>
+                    );
+                  })}
+                  <g
+                    className="stop"
+                    style={{ animationDelay: `${0.3 + n * 0.25}s` }}
+                  >
+                    <svg
+                      x={wxEnd - 48}
+                      y={lastY + 54}
+                      width="96"
+                      height="76"
+                      viewBox="0 0 215 170"
+                    >
+                      <WhaleInnerGroup mood="happy" />
+                    </svg>
+                  </g>
+                </svg>
+              )}
+            </div>
+            <button type="button" className="redo" id="redo" onClick={handleRedo}>
+              {lang === 'KR' ? '다시 고르기' : 'Pick Again'}
+            </button>
           </section>
         </>
       )}
