@@ -174,12 +174,12 @@ body {
 }
 
 .hero {
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 260px);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 22px 48px;
+  padding: 0 22px 32px;
   position: relative;
 }
 
@@ -411,20 +411,90 @@ svg {
 
 .curated-list {
   width: 100%;
-  margin-top: 16px;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 0;
   text-align: left;
 }
 
 .curated-item {
-  padding-bottom: 24px;
+  padding: 16px 0;
   border-bottom: 1.5px dashed rgba(74, 59, 99, 0.22);
 }
 
 .curated-item:last-child {
   border-bottom: 0;
+}
+
+/* Title-only clickable row in 추천 여행코스 (with small main thumbnail on the left) */
+.course-title-btn {
+  width: 100%;
+  font: inherit;
+  color: var(--line);
+  background: none;
+  border: 0;
+  padding: 4px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: opacity 0.18s ease, transform 0.15s ease;
+}
+
+.course-title-btn:hover {
+  opacity: 0.85;
+}
+
+.course-title-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.course-main-thumb {
+  width: 64px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 9px;
+  border: 1.5px solid rgba(74, 59, 99, 0.25);
+  background: var(--card);
+  flex-shrink: 0;
+  display: block;
+}
+
+.course-title-text {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.course-toggle-mark {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--mint);
+  color: #2A2236;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.course-title-btn[aria-expanded="true"] .course-toggle-mark {
+  transform: rotate(180deg);
+}
+
+.course-detail-panel {
+  padding: 14px 4px 6px;
+  animation: fade 0.25s ease;
 }
 
 .curated-badge {
@@ -445,10 +515,91 @@ svg {
 }
 
 .curated-desc {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   font-size: 15px;
-  opacity: 0.82;
+  opacity: 0.85;
   line-height: 1.6;
+}
+
+/* Compact Korea Tourism Organization (KTO TourAPI) Thumbnail Row */
+.kto-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+
+.kto-thumb-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 88px;
+  text-decoration: none;
+  color: var(--line);
+}
+
+.kto-thumb-img {
+  width: 88px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1.5px solid rgba(74, 59, 99, 0.25);
+  background: var(--card);
+  display: block;
+  transition: transform 0.18s ease;
+}
+
+.kto-thumb-item:hover .kto-thumb-img {
+  transform: translateY(-2px);
+}
+
+.kto-thumb-caption {
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.25;
+  text-align: center;
+  opacity: 0.8;
+  word-break: keep-all;
+}
+
+/* Program Details List (e.g., 반구천을 누비다) - Clean without heavy boxes */
+.program-details {
+  margin: 10px 0 14px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  row-gap: 6px;
+  column-gap: 12px;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.program-dt {
+  font-weight: 700;
+  color: var(--line);
+  opacity: 0.92;
+  white-space: nowrap;
+}
+
+.program-dd {
+  margin: 0;
+  opacity: 0.86;
+  word-break: keep-all;
+}
+
+.program-dd a {
+  color: var(--line);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.program-note {
+  margin: 6px 0 14px;
+  font-size: 13.5px;
+  opacity: 0.75;
+  line-height: 1.5;
+  word-break: keep-all;
 }
 
 .curated-flow {
@@ -492,6 +643,99 @@ svg {
   gap: 12px;
   font-size: 14px;
   opacity: 0.78;
+}
+
+/* Cute "부산에서 울산 오는 길" Illustrated Guide on Main Page (Borderless) */
+.how-to-come {
+  max-width: 780px;
+  margin: 12px auto 44px;
+  padding: 18px 22px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.how-title {
+  margin: 8px 0 6px;
+  font-family: "Gowun Dodum", "Apple SD Gothic Neo", sans-serif;
+  font-weight: 400;
+  font-size: clamp(22px, 5vw, 30px);
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.how-sub {
+  margin: 0 0 26px;
+  font-size: 15px;
+  opacity: 0.78;
+  word-break: keep-all;
+}
+
+.how-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px 18px;
+  align-items: start;
+}
+
+@media (max-width: 680px) {
+  .how-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+.how-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4px 8px;
+  transition: transform 0.22s ease;
+}
+
+.how-item:hover {
+  transform: translateY(-5px);
+}
+
+.how-doodle {
+  width: 118px;
+  height: 82px;
+  margin-bottom: 8px;
+}
+
+.how-badge {
+  display: inline-block;
+  font-size: 13px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--mint);
+  color: #2A2236;
+  margin-bottom: 7px;
+}
+
+.how-name {
+  margin: 0 0 5px;
+  font-size: 19px;
+  font-weight: 400;
+  word-break: keep-all;
+}
+
+.how-desc {
+  margin: 0 0 4px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  opacity: 0.88;
+  word-break: keep-all;
+}
+
+.how-tip {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.68;
+  word-break: keep-all;
 }
 
 /* Minimal, borderless footer links for Google AdSense verification */

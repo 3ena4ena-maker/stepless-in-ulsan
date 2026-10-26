@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useKtoCourseThumbs } from './services/ulsanTourApi';
 
 type Lang = 'KR' | 'EN';
 type MainTab = 'home' | 'courses' | 'schedule';
-type CourseThemeFilter = 'all' | 'ocean' | 'garden' | 'night' | 'heritage';
+type CourseCategoryTab = 'itinerary' | 'gourmet' | 'attraction' | 'experience';
 type ScheduleSeasonFilter = 'all_seasons' | 'all' | 'spring' | 'summer' | 'autumn' | 'winter';
 
 interface PlaceItem {
@@ -31,13 +32,21 @@ interface DurationOption {
   count: number;
 }
 
+interface ProgramDetailRow {
+  label: { KR: string; EN: string };
+  value: { KR: string; EN: string };
+}
+
 interface CuratedCourseItem {
   id: string;
-  theme: 'ocean' | 'garden' | 'night' | 'heritage';
+  category: CourseCategoryTab;
   badge: { KR: string; EN: string };
   title: { KR: string; EN: string };
   desc: { KR: string; EN: string };
   stops: { KR: string[]; EN: string[] };
+  ktoThumbKeys: string[];
+  programInfo?: ProgramDetailRow[];
+  programNote?: { KR: string; EN: string };
 }
 
 interface UlsanScheduleItem {
@@ -48,6 +57,7 @@ interface UlsanScheduleItem {
   place: { KR: string; EN: string };
   desc: { KR: string; EN: string };
   tip: { KR: string; EN: string };
+  ktoThumbKeys: string[];
 }
 
 const BODY_PATH =
@@ -191,18 +201,22 @@ const DURATION_OPTIONS: DurationOption[] = [
 ];
 
 const CURATED_COURSES: CuratedCourseItem[] = [
+  // ==========================================
+  // 1. 일정별 코스 (itinerary) - 기존 4대 추천 여행코스
+  // ==========================================
   {
     id: 'course-whale-sea',
-    theme: 'ocean',
-    badge: { KR: '고래와 바다 · 당일치기', EN: 'Whale & Ocean · Day Trip' },
+    category: 'itinerary',
+    badge: { KR: '일정별 코스 · 당일치기 (고래·바다)', EN: 'Itinerary · Day Trip (Whale & Ocean)' },
     title: {
       KR: '장생포 고래문화특구 & 대왕암 솔바람 코스',
       EN: 'Jangsaengpo Whale Zone & Daewangam Pine Trail',
     },
     desc: {
-      KR: '고래박물관과 해저터널부터 단차 없는 대왕암 해송 데크길, 일산해변 오션뷰 카페까지 이어지는 울산 대표 바다 코스입니다.',
+      KR: '고래박물관과 해저터널부터 단차 없는 대왕암 해송 데크길, 일산해변 오션뷰 카페까지 이어지는 울산 대표 당일치기 코스입니다.',
       EN: 'Experience the underwater dolphin tunnel, elevator-linked monorail, and a zero-step pine boardwalk along the East Sea.',
     },
+    ktoThumbKeys: ['whaleMuseum', 'whaleEco', 'daewangam', 'ilsanBeach'],
     stops: {
       KR: ['장생포 고래박물관', '고래생태체험관', '대왕암공원 무장애데크', '일산해수욕장 카페'],
       EN: ['Jangsaengpo Whale Museum', 'Whale Eco Tunnel', 'Daewangam Boardwalk', 'Ilsan Beach Cafe'],
@@ -210,8 +224,8 @@ const CURATED_COURSES: CuratedCourseItem[] = [
   },
   {
     id: 'course-bamboo-garden',
-    theme: 'garden',
-    badge: { KR: '숲과 정원 · 반나절~당일', EN: 'Forest & Garden · Half/Full Day' },
+    category: 'itinerary',
+    badge: { KR: '일정별 코스 · 반나절~당일 (국가정원)', EN: 'Itinerary · Half/Full Day (Garden)' },
     title: {
       KR: '동해선 태화강 국가정원 & 십리대숲 은하수길 코스',
       EN: 'Taehwagang National Garden & Bamboo Starlight Course',
@@ -220,6 +234,7 @@ const CURATED_COURSES: CuratedCourseItem[] = [
       KR: '부산에서 동해선 전철로 40분! 바퀴 빠짐 없는 십리대숲 평지 산책로와 무장애 전동관람차, 정원 앞 브런치를 즐기는 힐링 코스입니다.',
       EN: 'Arrive via the step-free Donghae Line and stroll through flat bamboo groves and flower meadows.',
     },
+    ktoThumbKeys: ['taehwagangGarden', 'taehwagangRiver', 'taehwaru'],
     stops: {
       KR: ['동해선 태화강역', '태화강 국가정원 안내센터', '십리대숲 은하수길', '국가정원 카페거리'],
       EN: ['Taehwagang Station', 'National Garden Center', 'Bamboo Starlight Path', 'Garden Cafe Street'],
@@ -227,8 +242,8 @@ const CURATED_COURSES: CuratedCourseItem[] = [
   },
   {
     id: 'course-sunset-bridge',
-    theme: 'night',
-    badge: { KR: '야경과 전망 · 오후~저녁', EN: 'Sunset & Night View · Afternoon' },
+    category: 'itinerary',
+    badge: { KR: '일정별 코스 · 오후~야간 (노을·야경)', EN: 'Itinerary · Afternoon to Night (Sunset)' },
     title: {
       KR: '간절곶 해안광장 & 울산대교 골든아워 야경 코스',
       EN: 'Ganjeolgot Coastal Plaza & Ulsan Bridge Sunset Course',
@@ -237,6 +252,7 @@ const CURATED_COURSES: CuratedCourseItem[] = [
       KR: '탁 트인 간절곶 소망우체통 평지 광장과 명선도 야간조명, 엘리베이터로 오르는 울산대교 전망대 노을을 만끽하는 감성 코스입니다.',
       EN: 'From the flat sunrise plaza of Ganjeolgot Cape to sparkling golden-hour views at Ulsan Bridge Observatory.',
     },
+    ktoThumbKeys: ['ganjeolgot', 'coastalCafe', 'ulsanBridge'],
     stops: {
       KR: ['간절곶 소망우체통', '간절곶 해안 카페', '명선도 야간조명', '울산대교 전망대'],
       EN: ['Ganjeolgot Wish Postbox', 'Ganjeolgot Coastal Cafe', 'Myeongseondo Lights', 'Ulsan Bridge Observatory'],
@@ -244,8 +260,8 @@ const CURATED_COURSES: CuratedCourseItem[] = [
   },
   {
     id: 'course-heritage-food',
-    theme: 'heritage',
-    badge: { KR: '역사와 미식 · 1박 2일 추천', EN: 'History & Foodie · Weekend' },
+    category: 'itinerary',
+    badge: { KR: '일정별 코스 · 1박 2일 (역사·미식)', EN: 'Itinerary · 2 Days 1 Night (Heritage)' },
     title: {
       KR: '반구대 암각화 박물관 & 언양불고기 미식 코스',
       EN: 'Bangudae Petroglyph Museum & Eonyang Bulgogi Course',
@@ -254,9 +270,206 @@ const CURATED_COURSES: CuratedCourseItem[] = [
       KR: 'KTX 울산역에서 출발해 실내 무계단 슬로프로 꾸며진 암각화박물관과 1층 입식 언양 한우불고기, 외고산 옹기마을을 둘러봅니다.',
       EN: 'Discover 7,000-year-old whale rock carvings in a ramp-equipped museum and savor authentic Eonyang Hanwoo Bulgogi.',
     },
+    ktoThumbKeys: ['petroglyphMuseum', 'bangudae', 'eonyangBulgogi', 'onggiVillage'],
     stops: {
       KR: ['KTX 울산역', '울산암각화박물관', '언양불고기 거리', '외고산 옹기마을'],
       EN: ['KTX Ulsan Station', 'Petroglyph Museum', 'Eonyang Bulgogi Street', 'Oegosan Onggi Village'],
+    },
+  },
+
+  // ==========================================
+  // 2. 식도락 (gourmet) - 추후 목록 추가·편집 가능
+  // ==========================================
+  {
+    id: 'gourmet-eonyang-hanwoo',
+    category: 'gourmet',
+    badge: { KR: '식도락 · 울산 대표 한우미식', EN: 'Gourmet · Signature Hanwoo' },
+    title: {
+      KR: '언양·봉계 한우불고기 특구 & KTX 로컬 미식 로드',
+      EN: 'Eonyang Hanwoo Bulgogi & Local Dessert Trail',
+    },
+    desc: {
+      KR: '신발을 벗지 않는 1층 평지 입식 테이블을 갖춘 언양 석쇠불고기 명가와 KTX 울산역 인근 대형 베이커리 카페를 잇는 식도락 코스입니다.',
+      EN: 'Savor charcoal-grilled Eonyang Hanwoo Bulgogi at step-free 1F restaurants followed by local artisanal bakeries.',
+    },
+    ktoThumbKeys: ['eonyangBulgogi', 'coastalCafe'],
+    stops: {
+      KR: ['언양 한우불고기 거리', '언양전통시장 떡갈비', '자수정동굴 인근 대형카페'],
+      EN: ['Eonyang Bulgogi Street', 'Eonyang Market Tteokgalbi', 'Spacious Garden Bakery'],
+    },
+  },
+  {
+    id: 'gourmet-ocean-seafood',
+    category: 'gourmet',
+    badge: { KR: '식도락 · 동해 해산물 & 오션뷰 카페', EN: 'Gourmet · East Sea Seafood & Cafe' },
+    title: {
+      KR: '방어진 가자미물회·장생포 고래빵 & 해안 카페 투어',
+      EN: 'Bangeojin Seafood, Whale Bread & Oceanview Cafe Tour',
+    },
+    desc: {
+      KR: '장생포 명물 고래빵 간식부터 방어진·일산해변의 신선한 활어회·물회, 그리고 간절곶·정자해변 1층 통창 오션뷰 카페까지 즐기는 미식 동선입니다.',
+      EN: 'Taste warm whale-shaped pastries, fresh East Sea flounder mulhoe, and oceanfront specialty coffee.',
+    },
+    ktoThumbKeys: ['whaleVillage', 'ganjeolgotSeafood', 'coastalCafe'],
+    stops: {
+      KR: ['장생포 고래빵 본점', '방어진·일산 활어회센터', '정자·간절곶 오션뷰 카페', '신정시장 손칼국수 골목'],
+      EN: ['Jangsaengpo Whale Bread', 'Bangeojin Seafood Center', 'Oceanview Coastal Cafe', 'Sinjeong Market Noodles'],
+    },
+  },
+
+  // ==========================================
+  // 3. 명소 (attraction) - 반구천을 누비다 등
+  // ==========================================
+  {
+    id: 'attraction-bangucheon-program',
+    category: 'attraction',
+    badge: {
+      KR: '명소 · 반구천 일원 문화·자연사 탐방 프로그램',
+      EN: 'Attraction · Bangucheon Heritage & Nature Program',
+    },
+    title: {
+      KR: '반구천을 누비다',
+      EN: 'Exploring Bangucheon Stream (Guided Heritage Program)',
+    },
+    desc: {
+      KR: '울산암각화박물관에서 출발하여 대곡리 반구대 암각화, 집청정, 반구서원, 공룡발자국 등 반구천 일원의 소중한 문화 및 자연사 자원을 함께 탐방하는 무료 해설 프로그램입니다.',
+      EN: 'A free 70-minute guided exploration starting from Ulsan Petroglyph Museum through Bangudae Petroglyphs, Jipcheongjeong Pavilion, Banguseowon Confucian Academy, and Dinosaur Footprints.',
+    },
+    ktoThumbKeys: ['petroglyphMuseum', 'bangudae', 'banguseowon', 'dinoFootprints'],
+    programInfo: [
+      {
+        label: { KR: '운영일정', EN: 'Schedule' },
+        value: {
+          KR: '운영기간: 상반기(2월~6월), 하반기(9월~11월) · 출발시간: 화~금 15:00 / 토~일 10:30, 15:00 · 소요시간: 약 70분',
+          EN: 'Period: 1st Half (Feb–Jun), 2nd Half (Sep–Nov) · Departure: Tue–Fri 15:00 / Sat–Sun 10:30, 15:00 · Duration: Approx. 70 mins',
+        },
+      },
+      {
+        label: { KR: '답사내용', EN: 'Content' },
+        value: {
+          KR: '반구천 일원 문화 및 자연사 자원 탐방 (대곡리 반구대 암각화, 집청정, 반구서원, 공룡발자국 등)',
+          EN: 'Cultural & natural history exploration around Bangucheon Stream (Bangudae Petroglyphs, Jipcheongjeong, Banguseowon, Dinosaur Footprints, etc.)',
+        },
+      },
+      {
+        label: { KR: '교육장소', EN: 'Venue' },
+        value: {
+          KR: '울산암각화박물관(출발 장소), 반구천 일원',
+          EN: 'Ulsan Petroglyph Museum (Departure Point) & Bangucheon Stream area',
+        },
+      },
+      {
+        label: { KR: '참가대상', EN: 'Eligibility' },
+        value: {
+          KR: '초등학생 이상 누구나(미취학 아동 참여 불가) · 회당 20명 내외, 단체일 경우 인솔자 포함 최대 40명까지 가능',
+          EN: 'Elementary school students & older (Preschoolers not permitted) · Around 20 per session (Up to 40 for groups including leader)',
+        },
+      },
+      {
+        label: { KR: '참가비', EN: 'Fee' },
+        value: {
+          KR: '무료',
+          EN: 'Free',
+        },
+      },
+      {
+        label: { KR: '신청기간', EN: 'Application' },
+        value: {
+          KR: '상시',
+          EN: 'Open year-round',
+        },
+      },
+      {
+        label: { KR: '신청방법', EN: 'Booking' },
+        value: {
+          KR: '전화(052-229-4794) 및 현장(울산암각화박물관 안내데스크) 예약',
+          EN: 'Phone (052-229-4794) or On-site reservation at Ulsan Petroglyph Museum Info Desk',
+        },
+      },
+    ],
+    programNote: {
+      KR: '※ 예약 취소 시에도 반드시 사전 연락 부탁드리며, 악천후 시에는 안전을 위해 일정이 조정될 수 있습니다.',
+      EN: '※ Please notify us in advance if canceling a reservation. Schedules may be adjusted during inclement weather for safety.',
+    },
+    stops: {
+      KR: ['울산암각화박물관 (출발)', '대곡리 반구대 암각화', '집청정 · 반구서원', '공룡발자국 화석'],
+      EN: ['Ulsan Petroglyph Museum (Start)', 'Bangudae Petroglyphs', 'Jipcheongjeong & Banguseowon', 'Dinosaur Footprints'],
+    },
+  },
+  {
+    id: 'attraction-east-coast',
+    category: 'attraction',
+    badge: { KR: '명소 · 바다·해맞이 랜드마크', EN: 'Attraction · Coastal Landmarks' },
+    title: {
+      KR: '대왕암공원 · 간절곶 · 명선도 동해안 3대 명소',
+      EN: 'Daewangam Park, Ganjeolgot & Myeongseondo Highlights',
+    },
+    desc: {
+      KR: '백년 해송 숲과 기암괴석이 어우러진 대왕암공원 무장애 데크길, 한반도 첫 일출 간절곶 소망우체통, 신비로운 명선도까지 울산 핵심 해안 명소입니다.',
+      EN: 'Explore Ulsan’s top three coastal landmarks equipped with wide wooden boardwalks and flat plazas.',
+    },
+    ktoThumbKeys: ['daewangam', 'daewangamBridge', 'ganjeolgot', 'ilsanBeach'],
+    stops: {
+      KR: ['대왕암공원 솔바람길', '일산해수욕장 평지해변', '간절곶 소망우체통 광장', '명선도 해안산책로'],
+      EN: ['Daewangam Pine Trail', 'Ilsan Beach Promenade', 'Ganjeolgot Wish Postbox', 'Myeongseondo Island'],
+    },
+  },
+  {
+    id: 'attraction-garden-skyline',
+    category: 'attraction',
+    badge: { KR: '명소 · 국가정원 & 야경 전망대', EN: 'Attraction · National Garden & Skyline' },
+    title: {
+      KR: '태화강 국가정원 십리대숲 & 울산대교 전망대',
+      EN: 'Taehwagang National Garden & Ulsan Bridge Observatory',
+    },
+    desc: {
+      KR: '낮에는 초록빛 대나무 숲과 계절 꽃밭을 평지로 산책하고, 해 질 녘에는 엘리베이터를 타고 올라가 반짝이는 울산 스카이라인을 감상합니다.',
+      EN: 'Walk through 100% flat bamboo groves by day and ride the elevator up Ulsan Bridge Observatory at sunset.',
+    },
+    ktoThumbKeys: ['taehwagangGarden', 'taehwaru', 'ulsanBridge'],
+    stops: {
+      KR: ['태화강 국가정원 초화원', '십리대숲 은하수길', '태화루 스카이워크', '울산대교 전망대'],
+      EN: ['Taehwagang Flower Garden', 'Bamboo Starlight Path', 'Taehwaru Skywalk', 'Ulsan Bridge Observatory'],
+    },
+  },
+
+  // ==========================================
+  // 4. 체험 (experience) - 추후 목록 추가·편집 가능
+  // ==========================================
+  {
+    id: 'experience-whale-monorail',
+    category: 'experience',
+    badge: { KR: '체험 · 고래생태·모노레일·전동차', EN: 'Experience · Whale Eco & Monorail' },
+    title: {
+      KR: '장생포 고래생태체험관 & 태화강 무장애 전동관람차',
+      EN: 'Whale Underwater Tunnel, Monorail & Garden Electric Tram',
+    },
+    desc: {
+      KR: '수중 해저터널 돌고래 관람과 엘리베이터 직결 장생포 모노레일 탑승, 태화강 국가정원 휠체어 리프트 전동관람차까지 온 가족이 즐기는 체험입니다.',
+      EN: 'Meet dolphins in the underwater tunnel, ride the elevator-accessible monorail, and tour the garden by electric tram.',
+    },
+    ktoThumbKeys: ['whaleEco', 'whaleVillage', 'taehwagangGarden', 'ulsanZoo'],
+    stops: {
+      KR: ['고래생태체험관 해저터널', '장생포 모노레일 (엘리베이터)', '태화강 무장애 전동관람차', '울산대공원 동물원'],
+      EN: ['Dolphin Underwater Tunnel', 'Jangsaengpo Monorail', 'Accessible Garden Tram', 'Ulsan Grand Park Zoo'],
+    },
+  },
+  {
+    id: 'experience-onggi-museum',
+    category: 'experience',
+    badge: { KR: '체험 · 전통옹기·실내 미디어아트', EN: 'Experience · Onggi Craft & Media Art' },
+    title: {
+      KR: '외고산 옹기마을 도자기 체험 & 장생포 문화창고 미디어아트',
+      EN: 'Oegosan Onggi Pottery Workshop & Culture Depot Media Art',
+    },
+    desc: {
+      KR: '비 오는 날이나 무더운 날에도 쾌적한 전 층 엘리베이터 복합문화공간(장생포 문화창고·울산시립미술관)과 전통 옹기 만들기 체험을 즐깁니다.',
+      EN: 'Hands-on pottery making and immersive indoor media art galleries with full elevator access.',
+    },
+    ktoThumbKeys: ['onggiVillage', 'petroglyphMuseum', 'ulsanMuseum'],
+    stops: {
+      KR: ['외고산 옹기마을 공방체험', '장생포 문화창고 미디어아트', '울산암각화박물관 3D체험', '울산시립미술관'],
+      EN: ['Onggi Pottery Workshop', 'Culture Depot Media Art', 'Petroglyph 3D Museum', 'Ulsan Art Museum'],
     },
   },
 ];
@@ -276,6 +489,7 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '무장애 팁: 고래박물관 광장 전 구간 평지 동선 · 모노레일 엘리베이터 상시 가동',
       EN: 'Step-free tip: Flat harbor plaza & full elevator access to the monorail.',
     },
+    ktoThumbKeys: ['whaleMuseum', 'whaleVillage'],
   },
   {
     id: 'evt-taehwa-flower',
@@ -291,6 +505,7 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '무장애 팁: 안내센터 휠체어·유모차 무료 대여 및 무장애 전동관람차 운행',
       EN: 'Step-free tip: Free wheelchair/stroller rental & accessible electric garden tram.',
     },
+    ktoThumbKeys: ['taehwagangGarden', 'taehwagangRiver'],
   },
   {
     id: 'evt-onggi',
@@ -306,6 +521,7 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '무장애 팁: 동해선 망양역 1번 출구 엘리베이터 하차 후 마을 입구 평지 진입',
       EN: 'Step-free tip: Easy access from Donghae Line Mangyang Station Exit 1 elevator.',
     },
+    ktoThumbKeys: ['onggiVillage'],
   },
   {
     id: 'evt-bamboo-summer',
@@ -321,6 +537,7 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '무장애 팁: 경화마사토 포장으로 밤에도 유모차·휠체어 바퀴 빠짐 없이 안전한 이동',
       EN: 'Step-free tip: Firm eco-paved bamboo paths ensure smooth rolling even at night.',
     },
+    ktoThumbKeys: ['taehwagangGarden', 'whaleVillage'],
   },
   {
     id: 'evt-industrial',
@@ -336,6 +553,7 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '무장애 팁: 태화강 둔치 평지 관람석 및 교통약자 전용 관람 구역 운영',
       EN: 'Step-free tip: Dedicated accessible viewing zones along the flat riverside plaza.',
     },
+    ktoThumbKeys: ['taehwagangRiver', 'taehwaru'],
   },
   {
     id: 'evt-sunrise',
@@ -351,6 +569,7 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '무장애 팁: 장애인 주차장에서 소망우체통 해안데크까지 단차 0cm 직결',
       EN: 'Step-free tip: Zero-step connection from accessible parking to Wish Postbox deck.',
     },
+    ktoThumbKeys: ['ganjeolgotSunrise', 'ganjeolgot'],
   },
   {
     id: 'evt-all-year',
@@ -366,22 +585,28 @@ const ULSAN_SCHEDULES: UlsanScheduleItem[] = [
       KR: '무장애 팁: 은하수길 전 구간 경사 0° 평지 · 고래바다여행선 1층 휠체어 승선 지원',
       EN: 'Step-free tip: 0° flat starlight path & wheelchair boarding assistance on 1F cruise deck.',
     },
+    ktoThumbKeys: ['whaleEco', 'taehwagangGarden'],
   },
 ];
 
-// Parse pathname into MainTab + sub-filter state
+// Parse pathname into MainTab + sub-category state
 function parseRouteFromPathname(pathname: string): {
   tab: MainTab;
-  courseFilter: CourseThemeFilter;
+  courseCategory: CourseCategoryTab;
   scheduleFilter: ScheduleSeasonFilter;
 } {
   const clean = pathname.replace(/\/+$/, '') || '/';
   if (clean === '/courses' || clean.startsWith('/courses/')) {
-    const sub = clean.split('/')[2] as CourseThemeFilter | undefined;
-    const validThemes: CourseThemeFilter[] = ['all', 'ocean', 'garden', 'night', 'heritage'];
+    const sub = clean.split('/')[2] as CourseCategoryTab | undefined;
+    const validCategories: CourseCategoryTab[] = [
+      'itinerary',
+      'gourmet',
+      'attraction',
+      'experience',
+    ];
     return {
       tab: 'courses',
-      courseFilter: sub && validThemes.includes(sub) ? sub : 'all',
+      courseCategory: sub && validCategories.includes(sub) ? sub : 'itinerary',
       scheduleFilter: 'all_seasons',
     };
   }
@@ -397,13 +622,13 @@ function parseRouteFromPathname(pathname: string): {
     ];
     return {
       tab: 'schedule',
-      courseFilter: 'all',
+      courseCategory: 'itinerary',
       scheduleFilter: sub && validSeasons.includes(sub) ? sub : 'all_seasons',
     };
   }
   return {
     tab: 'home',
-    courseFilter: 'all',
+    courseCategory: 'itinerary',
     scheduleFilter: 'all_seasons',
   };
 }
@@ -497,6 +722,131 @@ function WhaleInnerGroup({ mood }: WhaleSvgContentProps) {
   );
 }
 
+interface KtoThumbnailRowProps {
+  presetKeys: string[];
+  fallbackKeyword?: string;
+  lang: Lang;
+}
+
+function KtoThumbnailRow({ presetKeys, fallbackKeyword, lang }: KtoThumbnailRowProps) {
+  const thumbs = useKtoCourseThumbs(presetKeys, fallbackKeyword);
+  if (thumbs.length === 0) return null;
+
+  return (
+    <div
+      className="kto-thumbs"
+      aria-label={
+        lang === 'KR'
+          ? '한국관광공사 TourAPI 관광지 사진'
+          : 'Korea Tourism Organization TourAPI Photos'
+      }
+    >
+      {thumbs.map((thumb) => (
+        <div key={thumb.contentId || thumb.imageUrl} className="kto-thumb-item">
+          <img
+            src={thumb.imageUrl}
+            alt={thumb.label[lang]}
+            className="kto-thumb-img"
+            loading="lazy"
+            onError={(e) => {
+              const parent = e.currentTarget.parentElement;
+              if (parent) parent.style.display = 'none';
+            }}
+          />
+          <span className="kto-thumb-caption">{thumb.label[lang]}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+interface CuratedCourseRowProps {
+  course: CuratedCourseItem;
+  isExpanded: boolean;
+  onToggle: () => void;
+  lang: Lang;
+}
+
+function CuratedCourseRow({
+  course,
+  isExpanded,
+  onToggle,
+  lang,
+}: CuratedCourseRowProps) {
+  const thumbs = useKtoCourseThumbs(course.ktoThumbKeys, course.title.KR);
+  const mainThumb = thumbs[0];
+
+  return (
+    <article className="curated-item">
+      <button
+        type="button"
+        className="course-title-btn"
+        aria-expanded={isExpanded}
+        onClick={onToggle}
+      >
+        <span className="course-title-left">
+          {mainThumb && (
+            <img
+              src={mainThumb.imageUrl}
+              alt={mainThumb.label[lang]}
+              className="course-main-thumb"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
+          <span className="course-title-text">{course.title[lang]}</span>
+        </span>
+        <span className="course-toggle-mark" aria-hidden="true">
+          ▾
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="course-detail-panel">
+          <p className="curated-desc">{course.desc[lang]}</p>
+
+          <KtoThumbnailRow
+            presetKeys={course.ktoThumbKeys}
+            fallbackKeyword={course.title.KR}
+            lang={lang}
+          />
+
+          {course.programInfo && course.programInfo.length > 0 && (
+            <dl className="program-details">
+              {course.programInfo.map((row) => (
+                <React.Fragment key={row.label.KR}>
+                  <dt className="program-dt">{row.label[lang]}</dt>
+                  <dd className="program-dd">{row.value[lang]}</dd>
+                </React.Fragment>
+              ))}
+            </dl>
+          )}
+
+          {course.programNote && (
+            <p className="program-note">{course.programNote[lang]}</p>
+          )}
+
+          <div className="curated-flow">
+            {course.stops[lang].map((stopName, idx) => (
+              <React.Fragment key={stopName}>
+                <span className="flow-step">
+                  <span className="flow-num">{idx + 1}</span>
+                  <span>{stopName}</span>
+                </span>
+                {idx < course.stops[lang].length - 1 && (
+                  <span className="flow-arrow">→</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      )}
+    </article>
+  );
+}
+
 export default function App() {
   const initialRoute = parseRouteFromPathname(window.location.pathname);
 
@@ -512,10 +862,11 @@ export default function App() {
   const [courseStops, setCourseStops] = useState<PlaceItem[]>([]);
   const [courseRenderKey, setCourseRenderKey] = useState<number>(0);
 
-  // Tab 2 (추천 여행코스) filter state
-  const [courseThemeFilter, setCourseThemeFilter] = useState<CourseThemeFilter>(
-    initialRoute.courseFilter,
+  // Tab 2 (추천 여행코스) category state: 일정별 코스 / 식도락 / 명소 / 체험
+  const [courseCategory, setCourseCategory] = useState<CourseCategoryTab>(
+    initialRoute.courseCategory,
   );
+  const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
 
   // Tab 3 (울산 주요일정표) filter state
   const [scheduleSeasonFilter, setScheduleSeasonFilter] =
@@ -529,7 +880,8 @@ export default function App() {
     const handlePopState = () => {
       const parsed = parseRouteFromPathname(window.location.pathname);
       setActiveTab(parsed.tab);
-      setCourseThemeFilter(parsed.courseFilter);
+      setCourseCategory(parsed.courseCategory);
+      setExpandedCourseId(null);
       setScheduleSeasonFilter(parsed.scheduleFilter);
     };
     window.addEventListener('popstate', handlePopState);
@@ -539,10 +891,25 @@ export default function App() {
   // Update document.title dynamically for each distinct page URL
   useEffect(() => {
     if (activeTab === 'courses') {
-      document.title =
-        lang === 'KR'
-          ? '울산 추천 여행코스 | STEPLESS IN ULSAN'
-          : 'Recommended Ulsan Courses | STEPLESS IN ULSAN';
+      const categoryTitles: Record<CourseCategoryTab, { KR: string; EN: string }> = {
+        itinerary: {
+          KR: '울산 일정별 추천 여행코스 | STEPLESS IN ULSAN',
+          EN: 'Ulsan Itinerary Courses | STEPLESS IN ULSAN',
+        },
+        gourmet: {
+          KR: '울산 식도락 추천 여행코스 | STEPLESS IN ULSAN',
+          EN: 'Ulsan Gourmet & Foodie Courses | STEPLESS IN ULSAN',
+        },
+        attraction: {
+          KR: '울산 대표 명소 추천 여행코스 | STEPLESS IN ULSAN',
+          EN: 'Ulsan Top Attractions | STEPLESS IN ULSAN',
+        },
+        experience: {
+          KR: '울산 체험·문화 추천 여행코스 | STEPLESS IN ULSAN',
+          EN: 'Ulsan Experiences & Museums | STEPLESS IN ULSAN',
+        },
+      };
+      document.title = categoryTitles[courseCategory][lang];
     } else if (activeTab === 'schedule') {
       document.title =
         lang === 'KR'
@@ -554,7 +921,7 @@ export default function App() {
           ? '울산 여행 코스 추천 & 무장애 가이드 | STEPLESS IN ULSAN'
           : 'Step-Free Ulsan Travel Guide | STEPLESS IN ULSAN';
     }
-  }, [activeTab, lang]);
+  }, [activeTab, courseCategory, lang]);
 
   // Navigate to a specific URL path and sync state
   const navigateToPath = (path: string, e?: React.MouseEvent<HTMLAnchorElement>) => {
@@ -564,7 +931,8 @@ export default function App() {
     }
     const parsed = parseRouteFromPathname(path);
     setActiveTab(parsed.tab);
-    setCourseThemeFilter(parsed.courseFilter);
+    setCourseCategory(parsed.courseCategory);
+    setExpandedCourseId(null);
     setScheduleSeasonFilter(parsed.scheduleFilter);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -676,8 +1044,8 @@ export default function App() {
     routePath += ` C${last[0]} ${last[1] + 50} ${wxEnd} ${last[1] + 50} ${wxEnd} ${last[1] + 60}`;
   }
 
-  const filteredCuratedCourses = CURATED_COURSES.filter((c) =>
-    courseThemeFilter === 'all' ? true : c.theme === courseThemeFilter,
+  const filteredCuratedCourses = CURATED_COURSES.filter(
+    (c) => c.category === courseCategory,
   );
 
   const filteredSchedules = ULSAN_SCHEDULES.filter((s) =>
@@ -914,11 +1282,385 @@ export default function App() {
               {lang === 'KR' ? '다시 고르기' : 'Pick Again'}
             </button>
           </section>
+
+          {/* 귀여운 일러스트로 안내하는 부산 → 울산 오는 3가지 방법 */}
+          <section
+            className="how-to-come"
+            aria-label={
+              lang === 'KR'
+                ? '부산에서 울산으로 오는 3가지 방법'
+                : '3 Ways to Get to Ulsan from Busan'
+            }
+          >
+            <div className="sep" />
+            <h2 className="how-title">
+              {lang === 'KR'
+                ? '부산에서 울산, 어떻게 올까요?'
+                : 'How to Get to Ulsan from Busan?'}
+            </h2>
+            <p className="how-sub">
+              {lang === 'KR'
+                ? '출발지와 여행 코스에 맞춰 가장 편한 방법을 골라보세요!'
+                : 'Pick the easiest way to hop over from Busan to Ulsan!'}
+            </p>
+
+            <div className="how-grid">
+              {/* 1. KTX (부산역 -> 울산역) */}
+              <div className="how-item">
+                <svg
+                  className="how-doodle"
+                  viewBox="0 0 130 90"
+                  role="img"
+                  aria-label="KTX 고속열차 일러스트"
+                >
+                  <g className="fl">
+                    {/* Speed lines */}
+                    <path
+                      d="M8 38 h10 M4 50 h14"
+                      stroke="var(--line)"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                    {/* Mint Offset Shadow */}
+                    <path
+                      d="M26 64 L26 34 C26 26 34 22 48 22 L84 22 C102 22 116 38 118 54 C119 60 114 64 106 64 Z"
+                      transform="translate(5 5)"
+                      fill="var(--mint)"
+                    />
+                    {/* KTX Train Body */}
+                    <path
+                      d="M26 64 L26 34 C26 26 34 22 48 22 L84 22 C102 22 116 38 118 54 C119 60 114 64 106 64 Z"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                      strokeLinejoin="round"
+                    />
+                    {/* Mint Stripe */}
+                    <path
+                      d="M28 48 L114 48"
+                      stroke="var(--mint)"
+                      strokeWidth="4.5"
+                      strokeLinecap="round"
+                    />
+                    {/* Windows */}
+                    <rect
+                      x="36"
+                      y="29"
+                      width="16"
+                      height="11"
+                      rx="4"
+                      fill="var(--mint)"
+                      stroke="var(--line)"
+                      strokeWidth="2.3"
+                    />
+                    <rect
+                      x="58"
+                      y="29"
+                      width="16"
+                      height="11"
+                      rx="4"
+                      fill="var(--mint)"
+                      stroke="var(--line)"
+                      strokeWidth="2.3"
+                    />
+                    {/* Cute Eye & Smile & Rosy Cheek */}
+                    <circle cx="94" cy="40" r="3.2" fill="var(--line)" />
+                    <ellipse
+                      cx="88"
+                      cy="46"
+                      rx="5"
+                      ry="3.2"
+                      fill="var(--blush)"
+                      opacity="0.9"
+                    />
+                    <path
+                      d="M95 54 Q101 59 107 54"
+                      fill="none"
+                      stroke="var(--line)"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                    />
+                    {/* Wheels */}
+                    <circle
+                      cx="44"
+                      cy="66"
+                      r="6.5"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                    />
+                    <circle
+                      cx="88"
+                      cy="66"
+                      r="6.5"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                    />
+                  </g>
+                </svg>
+                <span className="how-badge">
+                  {lang === 'KR' ? '부산역 → 울산역 (약 20분)' : 'Busan Stn. → Ulsan Stn. (20m)'}
+                </span>
+                <h3 className="how-name">
+                  {lang === 'KR' ? 'KTX 타고 울산역 하차' : 'KTX to Ulsan Station'}
+                </h3>
+                <p className="how-desc">
+                  {lang === 'KR'
+                    ? '부산역에서 KTX를 타면 슈웅~ 눈 깜짝할 새 울산역에 도착해요!'
+                    : 'Hop on the KTX at Busan Station and arrive at Ulsan Station in just 20 minutes!'}
+                </p>
+                <p className="how-tip">
+                  {lang === 'KR'
+                    ? '반구대 암각화 · 언양불고기 갈 때 딱!'
+                    : 'Best for Bangudae Petroglyphs & Eonyang Bulgogi'}
+                </p>
+              </div>
+
+              {/* 2. 동해선 광역전철 (부전·센텀·기장 -> 태화강역) */}
+              <div className="how-item">
+                <svg
+                  className="how-doodle"
+                  viewBox="0 0 130 90"
+                  role="img"
+                  aria-label="동해선 전철 일러스트"
+                >
+                  <g className="fl" style={{ animationDelay: '0.6s' }}>
+                    {/* Pantograph on roof */}
+                    <path
+                      d="M56 22 L65 13 L74 22"
+                      fill="none"
+                      stroke="var(--line)"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    {/* Mint Offset Shadow */}
+                    <rect
+                      x="24"
+                      y="22"
+                      width="82"
+                      height="42"
+                      rx="12"
+                      transform="translate(5 5)"
+                      fill="var(--mint)"
+                    />
+                    {/* Metro Body */}
+                    <rect
+                      x="24"
+                      y="22"
+                      width="82"
+                      height="42"
+                      rx="12"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                    />
+                    {/* Windows */}
+                    <rect
+                      x="33"
+                      y="30"
+                      width="17"
+                      height="13"
+                      rx="4"
+                      fill="var(--mint)"
+                      stroke="var(--line)"
+                      strokeWidth="2.3"
+                    />
+                    <rect
+                      x="56"
+                      y="30"
+                      width="17"
+                      height="13"
+                      rx="4"
+                      fill="var(--mint)"
+                      stroke="var(--line)"
+                      strokeWidth="2.3"
+                    />
+                    {/* Cute Face on Right End */}
+                    <circle cx="88" cy="38" r="3.2" fill="var(--line)" />
+                    <ellipse
+                      cx="82"
+                      cy="45"
+                      rx="5"
+                      ry="3.2"
+                      fill="var(--blush)"
+                      opacity="0.9"
+                    />
+                    <path
+                      d="M86 52 Q92 57 98 52"
+                      fill="none"
+                      stroke="var(--line)"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                    />
+                    {/* Wheels */}
+                    <circle
+                      cx="42"
+                      cy="66"
+                      r="6.5"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                    />
+                    <circle
+                      cx="88"
+                      cy="66"
+                      r="6.5"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                    />
+                  </g>
+                </svg>
+                <span className="how-badge">
+                  {lang === 'KR'
+                    ? '부전·센텀·기장 → 태화강역'
+                    : 'Bujeon / BEXCO → Taehwagang Stn.'}
+                </span>
+                <h3 className="how-name">
+                  {lang === 'KR' ? '동해선 타고 태화강역 하차' : 'Donghae Line to Taehwagang'}
+                </h3>
+                <p className="how-desc">
+                  {lang === 'KR'
+                    ? '교통카드 찍고 동해선 전철 타면 울산 중심 태화강역에서 바로 내려요!'
+                    : 'Tap your transit card on the Donghae Line and step right into downtown Ulsan!'}
+                </p>
+                <p className="how-tip">
+                  {lang === 'KR'
+                    ? '태화강 국가정원 · 장생포 · 대왕암 갈 때 최고!'
+                    : 'Best for National Garden, Jangsaengpo & Daewangam'}
+                </p>
+              </div>
+
+              {/* 3. 부산 노포역 시외·직행버스 */}
+              <div className="how-item">
+                <svg
+                  className="how-doodle"
+                  viewBox="0 0 130 90"
+                  role="img"
+                  aria-label="노포역 버스 일러스트"
+                >
+                  <g className="fl" style={{ animationDelay: '1.2s' }}>
+                    {/* Little puff of happy exhaust */}
+                    <circle
+                      cx="14"
+                      cy="56"
+                      r="4"
+                      fill="var(--mint)"
+                      stroke="var(--line)"
+                      strokeWidth="2.2"
+                    />
+                    {/* Mint Offset Shadow */}
+                    <rect
+                      x="24"
+                      y="20"
+                      width="84"
+                      height="44"
+                      rx="14"
+                      transform="translate(5 5)"
+                      fill="var(--mint)"
+                    />
+                    {/* Bus Body */}
+                    <rect
+                      x="24"
+                      y="20"
+                      width="84"
+                      height="44"
+                      rx="14"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                    />
+                    {/* Side Mirror */}
+                    <path
+                      d="M108 32 Q115 32 115 40"
+                      fill="none"
+                      stroke="var(--line)"
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
+                    />
+                    {/* Bus Windows */}
+                    <rect
+                      x="33"
+                      y="28"
+                      width="18"
+                      height="14"
+                      rx="4"
+                      fill="var(--mint)"
+                      stroke="var(--line)"
+                      strokeWidth="2.3"
+                    />
+                    <rect
+                      x="56"
+                      y="28"
+                      width="18"
+                      height="14"
+                      rx="4"
+                      fill="var(--mint)"
+                      stroke="var(--line)"
+                      strokeWidth="2.3"
+                    />
+                    {/* Cute Bus Face */}
+                    <circle cx="90" cy="37" r="3.2" fill="var(--line)" />
+                    <ellipse
+                      cx="84"
+                      cy="45"
+                      rx="5.2"
+                      ry="3.4"
+                      fill="var(--blush)"
+                      opacity="0.9"
+                    />
+                    <path
+                      d="M88 52 Q94 57 100 52"
+                      fill="none"
+                      stroke="var(--line)"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                    />
+                    {/* Wheels */}
+                    <circle
+                      cx="44"
+                      cy="66"
+                      r="7"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                    />
+                    <circle
+                      cx="88"
+                      cy="66"
+                      r="7"
+                      fill="var(--paper)"
+                      stroke="var(--line)"
+                      strokeWidth="2.8"
+                    />
+                  </g>
+                </svg>
+                <span className="how-badge">
+                  {lang === 'KR' ? '부산 노포역 → 울산' : 'Busan Nopo Stn. → Ulsan'}
+                </span>
+                <h3 className="how-name">
+                  {lang === 'KR' ? '노포역에서 버스 타고 오기' : 'Express Bus from Nopo Stn.'}
+                </h3>
+                <p className="how-desc">
+                  {lang === 'KR'
+                    ? '부산 1호선 노포역 종합버스터미널에서 버스를 타고 편하게 올 수 있어요!'
+                    : 'Catch a comfortable bus directly from Busan Line 1 Nopo Station Terminal!'}
+                </p>
+                <p className="how-tip">
+                  {lang === 'KR'
+                    ? '배차 간격이 짧아 언제든 부릉부릉 출발!'
+                    : 'Frequent departures for easy, flexible trips'}
+                </p>
+              </div>
+            </div>
+          </section>
         </>
       )}
 
       {/* ==========================================
-          PAGE 2: 추천 여행코스 (/courses, /courses/:theme)
+          PAGE 2: 추천 여행코스 (/courses, /courses/gourmet, /courses/attraction, /courses/experience)
          ========================================== */}
       {activeTab === 'courses' && (
         <section
@@ -935,48 +1677,45 @@ export default function App() {
           <h1 className="ask-title">
             {lang === 'KR' ? '울산 추천 여행코스' : 'Recommended Ulsan Courses'}
           </h1>
-          <p className="tab-subtitle">
-            {lang === 'KR'
-              ? '계단과 턱 걱정 없이 편안하게 이어지는 울산 대표 4대 추천 여행코스예요.'
-              : 'Four curated step-free itineraries connecting Ulsan’s signature spots.'}
-          </p>
 
-          <nav className="group" aria-label={lang === 'KR' ? '추천 여행코스 테마' : 'Course Themes'}>
+          <nav
+            className="group"
+            aria-label={lang === 'KR' ? '추천 여행코스 카테고리' : 'Course Categories'}
+          >
             {[
-              { id: 'all' as const, path: '/courses', KR: '전체 코스', EN: 'All' },
               {
-                id: 'ocean' as const,
-                path: '/courses/ocean',
-                KR: '고래와 바다',
-                EN: 'Whale & Ocean',
+                id: 'itinerary' as const,
+                path: '/courses',
+                KR: '일정별 코스',
+                EN: 'By Schedule',
               },
               {
-                id: 'garden' as const,
-                path: '/courses/garden',
-                KR: '국가정원·대숲',
-                EN: 'Garden & Bamboo',
+                id: 'gourmet' as const,
+                path: '/courses/gourmet',
+                KR: '식도락',
+                EN: 'Gourmet',
               },
               {
-                id: 'night' as const,
-                path: '/courses/night',
-                KR: '야경·해맞이',
-                EN: 'Sunset & Night',
+                id: 'attraction' as const,
+                path: '/courses/attraction',
+                KR: '명소',
+                EN: 'Attractions',
               },
               {
-                id: 'heritage' as const,
-                path: '/courses/heritage',
-                KR: '역사·언양불고기',
-                EN: 'History & Food',
+                id: 'experience' as const,
+                path: '/courses/experience',
+                KR: '체험',
+                EN: 'Experiences',
               },
-            ].map((filter) => (
+            ].map((cat) => (
               <a
-                key={filter.id}
-                href={filter.path}
+                key={cat.id}
+                href={cat.path}
                 className="chip"
-                aria-current={courseThemeFilter === filter.id ? 'page' : undefined}
-                onClick={(e) => navigateToPath(filter.path, e)}
+                aria-current={courseCategory === cat.id ? 'page' : undefined}
+                onClick={(e) => navigateToPath(cat.path, e)}
               >
-                {filter[lang]}
+                {cat[lang]}
               </a>
             ))}
           </nav>
@@ -985,24 +1724,15 @@ export default function App() {
 
           <div className="curated-list">
             {filteredCuratedCourses.map((c) => (
-              <article key={c.id} className="curated-item">
-                <span className="curated-badge">{c.badge[lang]}</span>
-                <h2 className="curated-title">{c.title[lang]}</h2>
-                <p className="curated-desc">{c.desc[lang]}</p>
-                <div className="curated-flow">
-                  {c.stops[lang].map((stopName, idx) => (
-                    <React.Fragment key={stopName}>
-                      <span className="flow-step">
-                        <span className="flow-num">{idx + 1}</span>
-                        <span>{stopName}</span>
-                      </span>
-                      {idx < c.stops[lang].length - 1 && (
-                        <span className="flow-arrow">→</span>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
-              </article>
+              <CuratedCourseRow
+                key={c.id}
+                course={c}
+                isExpanded={expandedCourseId === c.id}
+                onToggle={() =>
+                  setExpandedCourseId((prev) => (prev === c.id ? null : c.id))
+                }
+                lang={lang}
+              />
             ))}
           </div>
         </section>
@@ -1076,6 +1806,11 @@ export default function App() {
                 <span className="curated-badge">{item.period[lang]}</span>
                 <h2 className="curated-title">{item.title[lang]}</h2>
                 <p className="curated-desc">{item.desc[lang]}</p>
+                <KtoThumbnailRow
+                  presetKeys={item.ktoThumbKeys}
+                  fallbackKeyword={item.title.KR}
+                  lang={lang}
+                />
                 <div className="schedule-meta">
                   <span>📍 {item.place[lang]}</span>
                   <span>·</span>
