@@ -1,4 +1,8 @@
-:root {
+:root,
+:root[data-theme="dark"],
+:root[data-theme="light"] {
+  color-scheme: light only;
+  forced-color-adjust: none;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -12,25 +16,21 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #2A2236;
-    --paper2: #352B44;
-    --line: #F3E9FF;
-    --mint: #4E9C94;
-    --blush: #E58F9A;
-    --water: #F3E9FF;
-    --card: rgba(255, 255, 255, 0.07);
+  :root,
+  html,
+  body {
+    color-scheme: light only;
+    forced-color-adjust: none;
+    --paper: #FFF5E1;
+    --paper2: #FFEBC9;
+    --line: #4A3B63;
+    --mint: #9ED8D0;
+    --blush: #FFB9B9;
+    --water: #4A3B63;
+    --card: rgba(255, 255, 255, 0.6);
+    background-color: #FFF5E1;
+    color: #4A3B63;
   }
-}
-
-:root[data-theme="dark"] {
-  --paper: #2A2236;
-  --paper2: #352B44;
-  --line: #F3E9FF;
-  --mint: #4E9C94;
-  --blush: #E58F9A;
-  --water: #F3E9FF;
-  --card: rgba(255, 255, 255, 0.07);
 }
 
 *, *::before, *::after {
@@ -38,6 +38,8 @@
 }
 
 html {
+  color-scheme: light only;
+  background-color: #FFF5E1;
   scroll-padding-top: env(safe-area-inset-top, 0px);
   scroll-behavior: smooth;
 }
@@ -45,8 +47,9 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  color: var(--line);
-  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  color: #4A3B63;
+  background-color: #FFF5E1;
+  background-image: linear-gradient(180deg, #FFF5E1, #FFEBC9);
   font-family: "Gowun Dodum", "Apple SD Gothic Neo", sans-serif;
   overflow-x: hidden;
 }
@@ -421,7 +424,7 @@ svg {
 /* Tab 2 (추천 여행코스) & Tab 3 (울산 주요일정표) Views */
 .tab-section {
   min-height: calc(100vh - 120px);
-  max-width: 680px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 28px 22px 64px;
   display: flex;
@@ -444,22 +447,42 @@ svg {
   word-break: keep-all;
 }
 
+/* Web 2-column magazine grid / Mobile 1-column card list */
 .curated-list {
   width: 100%;
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
   text-align: left;
 }
 
-.curated-item {
-  padding: 16px 0;
-  border-bottom: 1.5px dashed rgba(74, 59, 99, 0.22);
+@media (max-width: 680px) {
+  .curated-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
-.curated-item:last-child {
-  border-bottom: 0;
+.curated-item {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.38);
+  border: 0;
+  box-shadow: 0 4px 14px rgba(74, 59, 99, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.curated-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow: 0 6px 18px rgba(74, 59, 99, 0.08);
+}
+
+.curated-item.expanded {
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 8px 22px rgba(74, 59, 99, 0.09);
 }
 
 /* Title-only clickable row in 추천 여행코스 (with small main thumbnail on the left) */
@@ -469,49 +492,62 @@ svg {
   color: var(--line);
   background: none;
   border: 0;
-  padding: 4px 2px;
+  padding: 2px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   text-align: left;
   cursor: pointer;
-  transition: opacity 0.18s ease, transform 0.15s ease;
-}
-
-.course-title-btn:hover {
-  opacity: 0.85;
 }
 
 .course-title-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 13px;
   min-width: 0;
 }
 
 .course-main-thumb {
-  width: 64px;
-  height: 46px;
+  width: 68px;
+  height: 50px;
   object-fit: cover;
-  border-radius: 9px;
-  border: 1.5px solid rgba(74, 59, 99, 0.25);
-  background: var(--card);
+  border-radius: 10px;
+  background: var(--paper);
   flex-shrink: 0;
   display: block;
 }
 
+.course-text-thumb {
+  width: 68px;
+  height: 50px;
+  border-radius: 10px;
+  background: rgba(158, 216, 208, 0.35);
+  color: var(--line);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 4px 5px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  word-break: keep-all;
+  overflow: hidden;
+}
+
 .course-title-text {
-  font-size: 20px;
-  font-weight: 400;
+  font-size: 18.5px;
+  font-weight: 700;
   line-height: 1.35;
   word-break: keep-all;
 }
 
 .course-toggle-mark {
   flex-shrink: 0;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--mint);
   color: #2A2236;
@@ -528,7 +564,9 @@ svg {
 }
 
 .course-detail-panel {
-  padding: 14px 4px 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1.5px dashed rgba(74, 59, 99, 0.18);
   animation: fade 0.25s ease;
 }
 
@@ -544,19 +582,35 @@ svg {
 
 .curated-title {
   margin: 0 0 8px;
-  font-size: 22px;
-  font-weight: 400;
+  font-size: 20px;
+  font-weight: 700;
   line-height: 1.3;
 }
 
 .curated-desc {
   margin: 0 0 12px;
   font-size: 15px;
-  opacity: 0.85;
-  line-height: 1.6;
+  opacity: 0.9;
+  line-height: 1.65;
+  word-break: keep-all;
 }
 
-/* Compact Korea Tourism Organization (KTO TourAPI) Thumbnail Row */
+/* Single wide photo inside expanded card */
+.kto-single-wrap {
+  margin: 10px 0 14px;
+}
+
+.kto-single-img {
+  width: 100%;
+  height: 175px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1.5px solid rgba(74, 59, 99, 0.18);
+  background: var(--paper);
+  display: block;
+}
+
+/* Multi-photo Korea Tourism Organization (KTO TourAPI) Thumbnail Row */
 .kto-thumbs {
   display: flex;
   flex-wrap: wrap;
@@ -569,18 +623,18 @@ svg {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  width: 88px;
+  width: 92px;
   text-decoration: none;
   color: var(--line);
 }
 
 .kto-thumb-img {
-  width: 88px;
-  height: 60px;
+  width: 92px;
+  height: 64px;
   object-fit: cover;
   border-radius: 10px;
-  border: 1.5px solid rgba(74, 59, 99, 0.25);
-  background: var(--card);
+  border: 1.5px solid rgba(74, 59, 99, 0.22);
+  background: var(--paper);
   display: block;
   transition: transform 0.18s ease;
 }
@@ -594,19 +648,22 @@ svg {
   font-size: 11.5px;
   line-height: 1.25;
   text-align: center;
-  opacity: 0.8;
+  opacity: 0.82;
   word-break: keep-all;
 }
 
-/* Program Details List (e.g., 반구천을 누비다) - Clean without heavy boxes */
+/* Program & Place Details Box inside expanded card */
 .program-details {
-  margin: 10px 0 14px;
-  padding: 0;
+  margin: 10px 0 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.42);
+  border: 0;
   display: grid;
-  grid-template-columns: 78px 1fr;
+  grid-template-columns: 74px 1fr;
   row-gap: 6px;
-  column-gap: 12px;
-  font-size: 14.5px;
+  column-gap: 10px;
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -670,6 +727,55 @@ svg {
 .flow-arrow {
   opacity: 0.45;
   font-size: 14px;
+}
+
+/* Naver Map & Google Maps Shortcut Buttons */
+.map-links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.map-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--line);
+  background: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  transition: transform 0.15s ease, background 0.18s ease;
+}
+
+.map-btn:hover {
+  transform: translateY(-1.5px);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.map-badge-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.naver-dot {
+  background: #03C75A;
+}
+
+.google-dot {
+  background: #4285F4;
 }
 
 .schedule-meta {

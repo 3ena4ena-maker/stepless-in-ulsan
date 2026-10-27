@@ -380,6 +380,37 @@ const CURATED_COURSES: CuratedCourseItem[] = [
 
   // [2-2. 브런치 (brunch)]
   {
+    id: 'gourmet-brunch-orosalt',
+    category: 'gourmet',
+    gourmetSub: 'brunch',
+    badge: { KR: '식도락 · 브런치', EN: 'Gourmet · Brunch' },
+    title: {
+      KR: '오로솔트 (OROSALT)',
+      EN: 'OROSALT (Maegok-dong Brunch)',
+    },
+    desc: {
+      KR: '울산 북구 매곡동에 위치한 감성 브런치 카페 겸 작은 그로서리샵으로, 직접 끓인 수제 소스와 신선한 계절 과일이 듬뿍 올라간 프렌치토스트, 바질 새우 리소또가 인기입니다.',
+      EN: 'A cozy brunch cafe and mini grocery shop in Maegok-dong beloved for fruit-topped French toast, basil shrimp cream risotto, and house-made sauces.',
+    },
+    ktoThumbKeys: [],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 북구 신기3길 19-19 1층 (매곡동)',
+          EN: '1F, 19-19, Singi 3-gil, Buk-gu, Ulsan (Maegok-dong)',
+        },
+      },
+      {
+        label: { KR: '대표메뉴', EN: 'Menu' },
+        value: {
+          KR: '과일 프렌치토스트 · 바질 새우 크림 리소또 · 비프 머쉬룸 파스타 · 포카치아 샌드위치',
+          EN: 'Fruit French toast, basil shrimp cream risotto, beef mushroom pasta & focaccia sandwich',
+        },
+      },
+    ],
+  },
+  {
     id: 'gourmet-brunch-lamerpanji',
     category: 'gourmet',
     gourmetSub: 'brunch',
@@ -474,6 +505,37 @@ const CURATED_COURSES: CuratedCourseItem[] = [
   },
 
   // [2-3. 음식점 (restaurant)]
+  {
+    id: 'gourmet-rest-mugeo-gondre',
+    category: 'gourmet',
+    gourmetSub: 'restaurant',
+    badge: { KR: '식도락 · 음식점', EN: 'Gourmet · Restaurant' },
+    title: {
+      KR: '곤드레 산나물밥집',
+      EN: 'Gondre Wild Herb Rice Restaurant (Mugeo-dong)',
+    },
+    desc: {
+      KR: '울산 남구 무거동에 위치한 건강한 한식 맛집으로, 향긋한 곤드레 나물과 들깨가루를 듬뿍 올려 지어낸 구수한 곤드레 돌솥밥과 고소한 들기름 두부구이를 맛볼 수 있습니다.',
+      EN: 'A beloved Korean restaurant in Mugeo-dong serving fragrant Gondre (thistle herb) stone-pot rice with savory soybean paste and perilla-oil grilled tofu.',
+    },
+    ktoThumbKeys: [],
+    programInfo: [
+      {
+        label: { KR: '위치', EN: 'Location' },
+        value: {
+          KR: '울산 남구 삼호로7번길 53 (무거동)',
+          EN: '53, Samho-ro 7beon-gil, Nam-gu, Ulsan (Mugeo-dong)',
+        },
+      },
+      {
+        label: { KR: '대표메뉴', EN: 'Menu' },
+        value: {
+          KR: '곤드레 돌솥밥 (강된장·양념간장) · 들기름 두부구이 · 메밀전병',
+          EN: 'Gondre stone-pot rice, perilla-oil grilled tofu & buckwheat crepes',
+        },
+      },
+    ],
+  },
   {
     id: 'gourmet-rest-eonyang-bulgogi',
     category: 'gourmet',
@@ -1411,6 +1473,31 @@ function KtoThumbnailRow({ presetKeys, fallbackKeyword, lang }: KtoThumbnailRowP
   const thumbs = useKtoCourseThumbs(presetKeys, fallbackKeyword);
   if (thumbs.length === 0) return null;
 
+  if (thumbs.length === 1) {
+    const single = thumbs[0];
+    return (
+      <div
+        className="kto-single-wrap"
+        aria-label={
+          lang === 'KR'
+            ? '한국관광공사 TourAPI 관광지 사진'
+            : 'Korea Tourism Organization TourAPI Photo'
+        }
+      >
+        <img
+          src={single.imageUrl}
+          alt={single.label[lang]}
+          className="kto-single-img"
+          loading="lazy"
+          onError={(e) => {
+            const parent = e.currentTarget.parentElement;
+            if (parent) parent.style.display = 'none';
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className="kto-thumbs"
@@ -1446,17 +1533,38 @@ interface CuratedCourseRowProps {
   lang: Lang;
 }
 
+function getMapSearchQuery(course: CuratedCourseItem): string {
+  if (course.id === 'experience-tour-bangucheon-program') {
+    return '울산암각화박물관';
+  }
+  if (course.id === 'gourmet-rest-mugeo-gondre') {
+    return '울산 남구 삼호로7번길 53 곤드레산나물밥집';
+  }
+  if (course.category === 'itinerary' && course.stops?.KR[0]) {
+    return `울산 ${course.stops.KR[0]}`;
+  }
+  const cleanTitle = course.title.KR.replace(/\([^)]*\)/g, '').trim();
+  return cleanTitle.startsWith('울산') ? cleanTitle : `울산 ${cleanTitle}`;
+}
+
 function CuratedCourseRow({
   course,
   isExpanded,
   onToggle,
   lang,
 }: CuratedCourseRowProps) {
-  const thumbs = useKtoCourseThumbs(course.ktoThumbKeys, course.title.KR);
+  const thumbs = useKtoCourseThumbs(course.ktoThumbKeys);
   const mainThumb = thumbs[0];
+  const [thumbFailed, setThumbFailed] = useState(false);
+  const shortThumbTitle = course.title[lang].replace(/\s*\([^)]*\)/g, '').trim();
+  const mapQuery = getMapSearchQuery(course);
+  const naverMapUrl = `https://map.naver.com/p/search/${encodeURIComponent(mapQuery)}`;
+  const googleMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    mapQuery,
+  )}`;
 
   return (
-    <article className="curated-item">
+    <article className={`curated-item ${isExpanded ? 'expanded' : ''}`}>
       <button
         type="button"
         className="course-title-btn"
@@ -1464,16 +1572,20 @@ function CuratedCourseRow({
         onClick={onToggle}
       >
         <span className="course-title-left">
-          {mainThumb && (
+          {mainThumb && !thumbFailed ? (
             <img
               src={mainThumb.imageUrl}
               alt={mainThumb.label[lang]}
               className="course-main-thumb"
               loading="lazy"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
+              onError={() => {
+                setThumbFailed(true);
               }}
             />
+          ) : (
+            <span className="course-text-thumb" aria-hidden="true">
+              {shortThumbTitle}
+            </span>
           )}
           <span className="course-title-text">{course.title[lang]}</span>
         </span>
@@ -1488,7 +1600,6 @@ function CuratedCourseRow({
 
           <KtoThumbnailRow
             presetKeys={course.ktoThumbKeys}
-            fallbackKeyword={course.title.KR}
             lang={lang}
           />
 
@@ -1522,6 +1633,31 @@ function CuratedCourseRow({
               ))}
             </div>
           )}
+
+          <div className="map-links-row">
+            <a
+              href={naverMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="map-btn naver"
+            >
+              <span className="map-badge-dot naver-dot" aria-hidden="true">
+                N
+              </span>
+              <span>{lang === 'KR' ? '네이버 지도' : 'Naver Map'}</span>
+            </a>
+            <a
+              href={googleMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="map-btn google"
+            >
+              <span className="map-badge-dot google-dot" aria-hidden="true">
+                G
+              </span>
+              <span>{lang === 'KR' ? '구글 맵' : 'Google Maps'}</span>
+            </a>
+          </div>
         </div>
       )}
     </article>
