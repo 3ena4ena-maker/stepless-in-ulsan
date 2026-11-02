@@ -187,6 +187,31 @@ export const ULSAN_KTO_SPOT_THUMBS: Record<string, KtoThumbItem> = {
     label: { KR: '울산박물관', EN: 'Ulsan Museum' },
     imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/36/3072936_image2_1.jpg',
   },
+  anianPark: {
+    contentId: '2717813',
+    label: { KR: '애니언파크(울산 반려동물 문화센터)', EN: 'Anian Park (Ulsan Pet Culture Center)' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/79/2917379_image2_1.jpg',
+  },
+  ganjeolgotSomanggil: {
+    contentId: '2610509',
+    label: { KR: '간절곶 소망길', EN: 'Ganjeolgot Somang-gil Trail' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/56/3077956_image2_1.bmp',
+  },
+  ulsanSinhwaVillage: {
+    contentId: '2611134',
+    label: { KR: '울산 신화마을', EN: 'Ulsan Sinhwa Art Village' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/16/3014916_image2_1.jpg',
+  },
+  ulsanArboretum: {
+    contentId: '1395991',
+    label: { KR: '울산테마식물수목원', EN: 'Ulsan Theme Botanical Arboretum' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/49/3084249_image2_1.jpg',
+  },
+  hwangbangsanCamping: {
+    contentId: '2731170',
+    label: { KR: '황방산생태야영장', EN: 'Hwangbangsan Eco Campground' },
+    imageUrl: 'https://tong.visitkorea.or.kr/cms/resource/71/2731471_image2_1.jpg',
+  },
 };
 
 const liveKeywordCache = new Map<string, KtoThumbItem | null>();
@@ -267,3 +292,58 @@ export function useKtoCourseThumbs(
   if (dynamicItem) return [dynamicItem];
   return [];
 }
+
+const KTO_PET_BASE_URL = 'https://apis.data.go.kr/B551011/KorPetTourService2';
+
+export interface LiveKtoPetSpot {
+  contentId: string;
+  contentTypeId: string;
+  title: string;
+  addr1: string;
+  imageUrl?: string;
+}
+
+let cachedLivePetSpots: LiveKtoPetSpot[] | null = null;
+
+/**
+ * 한국관광공사_반려동물_동반여행_서비스 (KorPetTourService2/areaBasedList2) 실시간 조회
+ * 향후 한국관광공사 DB에 신규 등록되는 울산(areaCode=7) 반려동물 동반 여행지·식당·카페를 자동으로 불러옵니다.
+ */
+export async function fetchLiveKtoPetSpots(): Promise<LiveKtoPetSpot[]> {
+  if (cachedLivePetSpots) return cachedLivePetSpots;
+  try {
+    const url = `${KTO_PET_BASE_URL}/areaBasedList2?serviceKey=${DEFAULT_TOUR_API_KEY}&MobileOS=ETC&MobileApp=SteplessUlsan&_type=json&areaCode=7&numOfRows=100&pageNo=1`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const rawItems = data?.response?.body?.items?.item;
+    const items = Array.isArray(rawItems) ? rawItems : rawItems ? [rawItems] : [];
+    const parsed: LiveKtoPetSpot[] = items
+      .filter((it: any) => it?.contentid && it?.title)
+      .map((it: any) => {
+        const rawImg = it.firstimage2 || it.firstimage;
+        const httpsImg = rawImg ? String(rawImg).replace(/^http:\/\//i, 'https://') : undefined;
+        const cid = String(it.contentid);
+        const key = `kto_pet_${cid}`;
+        if (httpsImg && !ULSAN_KTO_SPOT_THUMBS[key]) {
+          ULSAN_KTO_SPOT_THUMBS[key] = {
+            contentId: cid,
+            label: { KR: String(it.title), EN: String(it.title) },
+            imageUrl: httpsImg,
+          };
+        }
+        return {
+          contentId: cid,
+          contentTypeId: String(it.contenttypeid || '12'),
+          title: String(it.title),
+          addr1: String(it.addr1 || '울산광역시'),
+          imageUrl: httpsImg,
+        };
+      });
+    cachedLivePetSpots = parsed;
+    return parsed;
+  } catch {
+    return [];
+  }
+}
+
