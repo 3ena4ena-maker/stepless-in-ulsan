@@ -1061,7 +1061,9 @@ svg {
 
 .ulsan-map-svg {
   width: 100%;
+  max-width: 100%;
   height: auto;
+  overflow: hidden;
   display: block;
 }
 
@@ -1584,6 +1586,7 @@ svg {
 .stamp-tour-wrap {
   width: 100%;
   max-width: 880px;
+  min-width: 0;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -1603,6 +1606,8 @@ svg {
 
 /* 지도 아래: 고래(상단 0/4 카운트) 옆 1/4 크기 초컴팩트 스탬프 진행 바 & 자동 제공 안내 */
 .stamp-progress-block {
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1613,6 +1618,7 @@ svg {
 .stamp-passport-header {
   width: fit-content;
   max-width: 100%;
+  min-width: 0;
   margin: 0 auto;
   display: inline-flex;
   align-items: center;
@@ -1904,9 +1910,10 @@ svg {
    ========================================== */
 .stamp-scene-svg {
   width: 100%;
-  height: 100%;
-  min-height: 168px;
-  object-fit: cover;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
   display: block;
 }
 
@@ -2069,14 +2076,20 @@ svg {
 }
 
 .stamp-portal-layout {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
 .stamp-portal-showcase {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: grid;
-  grid-template-columns: 1.08fr 0.92fr;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   gap: 18px;
   background: #FFFDF9;
   border: 2.5px solid var(--line);
@@ -2086,6 +2099,8 @@ svg {
 }
 
 .stamp-portal-left {
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -2093,6 +2108,8 @@ svg {
 
 .stamp-portal-media {
   position: relative;
+  width: 100%;
+  max-width: 100%;
   border-radius: 16px;
   overflow: hidden;
   border: 2px solid var(--line);
@@ -2105,6 +2122,8 @@ svg {
 }
 
 .stamp-portal-info {
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -2112,6 +2131,8 @@ svg {
 }
 
 .stamp-portal-right {
+  min-width: 0;
+  max-width: 100%;
   background: #FAF5EA;
   border: 1.8px solid rgba(43, 36, 56, 0.18);
   border-radius: 18px;
@@ -2121,6 +2142,9 @@ svg {
 }
 
 .stamp-grid-book {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   background: #FAF4E6;
   border: 2px solid var(--line);
   border-radius: 22px;
@@ -2135,12 +2159,16 @@ svg {
 }
 
 .stamp-visa-grid {
+  width: 100%;
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
 .stamp-visa-card {
+  min-width: 0;
+  max-width: 100%;
   background: #FFFDF9;
   border: 2px solid rgba(43, 36, 56, 0.25);
   border-radius: 16px;
@@ -2168,6 +2196,16 @@ svg {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  min-width: 0;
+}
+
+.stamp-visa-top > div:first-child {
+  min-width: 0;
+  flex: 1;
+}
+
+.stamp-visa-top > .stamp-slot-circle {
+  flex-shrink: 0;
 }
 
 .stamp-visa-stage {
@@ -2207,6 +2245,9 @@ svg {
    별점 & 한줄리뷰 보드 공통
    ========================================== */
 .stamp-review-board {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -2298,6 +2339,9 @@ svg {
 }
 
 .stamp-review-form {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -2794,21 +2838,213 @@ svg {
 }
 
 @media (max-width: 780px) {
+  .tab-section {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px 14px 52px;
+  }
+
+  .stamp-tour-wrap {
+    gap: 16px;
+  }
+
+  .stamp-tour-lead {
+    font-size: clamp(14px, 3.8vw, 16px);
+    padding: 0 4px;
+  }
+
   .stamp-passport-header {
     padding: 6px 12px;
     gap: 10px;
   }
 
   .stamp-whale-col {
-    width: 44px;
+    width: 42px;
+  }
+
+  .stamp-progress-col {
+    min-width: 0;
+  }
+
+  .stamp-progress-note {
+    font-size: 12px;
+    padding: 0 6px;
+  }
+
+  .stamp-portal-layout {
+    gap: 16px;
   }
 
   .stamp-portal-showcase {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px;
+    gap: 14px;
+    border-radius: 20px;
+    box-shadow: 3px 4px 0 var(--mint);
+  }
+
+  .stamp-portal-right {
+    padding: 12px 13px;
+    border-radius: 15px;
+  }
+
+  .stamp-grid-book {
+    padding: 14px;
+    border-radius: 18px;
   }
 
   .stamp-visa-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .stamp-portal-seal-float {
+    bottom: 8px;
+    right: 8px;
+  }
+
+  .stamp-slot-circle.lg {
+    width: 58px;
+    height: 58px;
+  }
+
+  .ink-stamp-seal.size-lg {
+    width: 52px;
+    height: 52px;
+  }
+
+  .stamp-place-title {
+    font-size: 17.5px;
+  }
+
+  .stamp-place-desc {
+    font-size: 13.2px;
+  }
+
+  .stamp-address-row {
+    gap: 6px 8px;
+  }
+
+  .stamp-address-text {
+    min-width: 0;
+    font-size: 12.5px;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  .stamp-cta-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .stamp-primary-3d-btn,
+  .stamp-secondary-btn {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .stamp-review-form {
+    padding: 10px;
+  }
+
+  .stamp-review-form-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 7px;
+  }
+
+  .stamp-input-author {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px;
+    padding: 7px 10px;
+  }
+
+  .stamp-review-form-bottom {
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .stamp-input-comment {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+
+  .stamp-review-submit {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 13.5px;
+  }
+
+  .stamp-rev-comment {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  .stamp-visa-card {
+    padding: 12px 14px;
+  }
+
+  .stamp-visa-top > .stamp-slot-circle {
+    width: 56px;
+    height: 56px;
+  }
+
+  .stamp-visa-top .ink-stamp-seal {
+    width: 50px;
+    height: 50px;
+  }
+
+  .stamp-3d-modal-backdrop {
+    padding: 8px;
+  }
+
+  .stamp-3d-modal-frame {
+    width: 100%;
+    height: 88dvh;
+    border-radius: 16px;
+  }
+
+  .stamp-auth-email-row {
+    flex-direction: column;
+  }
+
+  .stamp-auth-email-input {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .stamp-auth-email-btn {
+    width: 100%;
+    padding: 9px 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .stamp-slots-row {
+    gap: 5px;
+  }
+
+  .stamp-slot-circle.mini {
+    width: 30px;
+    height: 30px;
+  }
+
+  .ink-stamp-seal.size-xs {
+    width: 27px;
+    height: 27px;
+  }
+
+  .stamp-cta-row {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
