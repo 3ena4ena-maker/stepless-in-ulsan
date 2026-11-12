@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { KTO_THUMB_TRANSLATIONS, Lang } from '../i18n';
 
 const KTO_BASE_URL = 'https://apis.data.go.kr/B551011/KorService2';
 
@@ -14,8 +15,24 @@ const DEFAULT_TOUR_API_KEY =
 
 export interface KtoThumbItem {
   contentId: string;
+  presetKey?: string;
   label: { KR: string; EN: string };
   imageUrl: string;
+}
+
+export function getKtoThumbCaption(thumb: KtoThumbItem, lang: Lang): string {
+  if (lang === 'KR') return thumb.label.KR;
+  if (lang === 'EN') return thumb.label.EN;
+  if (thumb.presetKey && KTO_THUMB_TRANSLATIONS[thumb.presetKey]?.[lang]) {
+    return KTO_THUMB_TRANSLATIONS[thumb.presetKey][lang];
+  }
+  const foundEntry = Object.entries(ULSAN_KTO_SPOT_THUMBS).find(
+    ([, v]) => v.contentId === thumb.contentId,
+  );
+  if (foundEntry && KTO_THUMB_TRANSLATIONS[foundEntry[0]]?.[lang]) {
+    return KTO_THUMB_TRANSLATIONS[foundEntry[0]][lang];
+  }
+  return thumb.label.EN || thumb.label.KR;
 }
 
 /**
@@ -268,9 +285,12 @@ export function useKtoCourseThumbs(
   presetKeys: string[],
   fallbackKeyword?: string,
 ): KtoThumbItem[] {
-  const presetItems = presetKeys
-    .map((k) => ULSAN_KTO_SPOT_THUMBS[k])
-    .filter((item): item is KtoThumbItem => Boolean(item));
+  const presetItems: KtoThumbItem[] = presetKeys
+    .map((k): KtoThumbItem | null => {
+      const item = ULSAN_KTO_SPOT_THUMBS[k];
+      return item ? { ...item, presetKey: k } : null;
+    })
+    .filter((item): item is KtoThumbItem => item !== null);
 
   const [dynamicItem, setDynamicItem] = useState<KtoThumbItem | null>(null);
 

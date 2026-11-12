@@ -123,40 +123,133 @@ body {
   color: var(--paper);
 }
 
-.lang-switch {
+.lang-dropdown {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
   user-select: none;
+  z-index: 60;
 }
 
-.lang-btn {
+.lang-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font: inherit;
-  background: none;
-  border: 0;
-  padding: 4px 6px;
-  color: var(--line);
-  opacity: 0.5;
-  cursor: pointer;
-  transition: opacity 0.18s ease, color 0.18s ease;
-}
-
-.lang-btn:hover {
-  opacity: 0.85;
-}
-
-.lang-btn.active {
-  opacity: 1;
+  font-size: 13.5px;
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 2px;
+  color: var(--line);
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 13px 6px 11px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--mint);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.18s ease;
 }
 
-.lang-divider {
-  opacity: 0.3;
-  font-size: 12px;
+.lang-dropdown-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0 var(--mint);
+}
+
+.lang-dropdown-btn.open {
+  background: var(--line);
+  color: var(--paper);
+  box-shadow: 2px 2px 0 var(--mint);
+}
+
+.lang-globe-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.lang-current-label {
+  line-height: 1.1;
+}
+
+.lang-chevron {
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.8;
+  transition: transform 0.18s ease;
+}
+
+.lang-dropdown-btn.open .lang-chevron {
+  transform: rotate(180deg);
+}
+
+.lang-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 154px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 4px 5px 0 rgba(43, 36, 56, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  animation: langMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes langMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.lang-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--line);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  padding: 7px 11px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.lang-dropdown-item:hover {
+  background: rgba(169, 232, 222, 0.45);
+}
+
+.lang-dropdown-item.active {
+  background: var(--line);
+  color: var(--paper);
+  font-weight: 700;
+}
+
+.lang-item-native {
+  white-space: nowrap;
+}
+
+.lang-item-code {
+  font-size: 11px;
+  opacity: 0.65;
+  font-weight: 700;
+}
+
+.lang-dropdown-item.active .lang-item-code {
+  opacity: 1;
+  color: var(--mint);
 }
 
 @media (max-width: 640px) {
@@ -1481,6 +1574,1240 @@ svg {
   }
 
   .itinerary-timeline-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================
+   ULSAN STAMP TOUR (울산 스탬프 투어: 패스포트 도장칸 + A/B안 + 3D 모달)
+   ========================================================== */
+.stamp-tour-wrap {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+}
+
+.stamp-tour-lead {
+  margin: -6px auto 2px;
+  text-align: center;
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--line);
+  opacity: 0.88;
+  word-break: keep-all;
+}
+
+/* 지도 아래: 고래(상단 0/4 카운트) 옆 1/4 크기 초컴팩트 스탬프 진행 바 & 자동 제공 안내 */
+.stamp-progress-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  margin-top: -4px;
+}
+
+.stamp-passport-header {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: #FFFDF9;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 6px 14px 7px;
+  box-shadow: 3px 3px 0 var(--mint);
+}
+
+.stamp-progress-note {
+  margin: 0;
+  text-align: center;
+  font-size: 12.8px;
+  font-weight: 700;
+  color: rgba(43, 36, 56, 0.72);
+  word-break: keep-all;
+}
+
+.stamp-whale-col {
+  width: 48px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.stamp-whale-count {
+  font-size: 11.5px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--line);
+}
+
+.stamp-whale-col svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.stamp-progress-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stamp-progress-track {
+  width: 100%;
+  height: 5.5px;
+  background: #F4EDE0;
+  border: 1.4px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stamp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--mint) 0%, #6CCDBB 100%);
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stamp-slots-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* 점선 원 (미방문) vs 커스텀 라인 잉크 스탬프 (방문 완료) */
+.stamp-slot-circle {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  padding: 0;
+  background: #FAF5EA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font: inherit;
+  transition: transform 0.16s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.stamp-slot-circle.mini {
+  width: 34px;
+  height: 34px;
+}
+
+.stamp-slot-circle.lg {
+  width: 78px;
+  height: 78px;
+}
+
+.stamp-slot-circle.empty {
+  border: 1.7px dashed rgba(43, 36, 56, 0.38);
+  color: rgba(43, 36, 56, 0.36);
+}
+
+.stamp-slot-circle.empty:hover {
+  border-color: var(--line);
+  color: rgba(43, 36, 56, 0.7);
+  transform: scale(1.06);
+  background: #FFFDF9;
+}
+
+.stamp-slot-circle.stamped {
+  border: 1.4px dashed rgba(43, 36, 56, 0.15);
+  background: #FFFDF8;
+}
+
+/* 선으로만 심플하게 표현한 커스텀 고무인 잉크 스탬프 인장 */
+.ink-stamp-seal {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 2.2px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(var(--stamp-tilt, -6deg));
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: inset 0 0 0 2.5px #FFFDF8, inset 0 0 0 3.6px currentColor;
+}
+
+.ink-stamp-seal.size-lg {
+  width: 72px;
+  height: 72px;
+}
+
+.ink-stamp-seal.size-sm {
+  width: 50px;
+  height: 50px;
+}
+
+.ink-stamp-seal.size-xs {
+  width: 31px;
+  height: 31px;
+  border-width: 1.6px;
+  box-shadow: inset 0 0 0 1.4px #FFFDF8, inset 0 0 0 2.2px currentColor;
+}
+
+.ink-stamp-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.ink-stamp-micro {
+  font-size: 6.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+/* "콩!" 도장 찍힘 애니메이션 */
+.ink-stamp-seal.just-stamped {
+  animation: stampKongSlam 0.52s cubic-bezier(0.2, 0.9, 0.28, 1.28) forwards;
+}
+
+@keyframes stampKongSlam {
+  0% {
+    opacity: 0;
+    transform: scale(2.35) rotate(-20deg);
+  }
+  52% {
+    opacity: 1;
+    transform: scale(0.88) rotate(var(--stamp-tilt, -6deg));
+  }
+  76% {
+    transform: scale(1.07) rotate(var(--stamp-tilt, -6deg));
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(var(--stamp-tilt, -6deg));
+  }
+}
+
+.ink-ripple-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  pointer-events: none;
+  animation: inkRingBurst 0.6s ease-out forwards;
+}
+
+@keyframes inkRingBurst {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+.ink-kong-pop {
+  position: absolute;
+  top: -16px;
+  right: -12px;
+  background: var(--ink-color, #C84B31);
+  color: #FFFDF9;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 1px 2px 0 var(--line);
+  animation: kongPopFloat 0.95s ease-out forwards;
+}
+
+@keyframes kongPopFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.6);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.08);
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-11px) scale(0.94);
+  }
+}
+
+/* 상단 2: 울산 스탬프 투어 지도 헤더 */
+.stamp-map-poster {
+  margin-top: 2px;
+}
+
+.stamp-map-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.stamp-map-kicker {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--line);
+  opacity: 0.85;
+}
+
+.stamp-map-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stamp-legend-ring {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.stamp-legend-ring.stamped {
+  background: #C84B31;
+  border: 1.6px solid var(--line);
+}
+
+.stamp-legend-ring.dashed {
+  background: #FFFDF9;
+  border: 1.8px dashed #C84B31;
+}
+
+/* ==========================================
+   중단 쇼케이스 (확정 B안): 좌측 공간 소개·입장·스탬프 / 우측 별점·한줄리뷰 + 하단 스탬프북 그리드
+   ========================================== */
+.stamp-scene-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 168px;
+  object-fit: cover;
+  display: block;
+}
+
+.stamp-cat-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #7A4B2A;
+  background: #F6ECDC;
+  border-radius: 999px;
+  padding: 2px 10px;
+  width: fit-content;
+}
+
+.stamp-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #C97A1E;
+}
+
+.stamp-rating-pill strong {
+  color: var(--line);
+  font-weight: 800;
+}
+
+.stamp-rating-pill span {
+  font-size: 12px;
+  color: rgba(43, 36, 56, 0.6);
+}
+
+.stamp-place-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--line);
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
+.stamp-place-desc {
+  margin: 0;
+  font-size: 13.8px;
+  line-height: 1.5;
+  color: rgba(43, 36, 56, 0.86);
+  word-break: keep-all;
+}
+
+.stamp-address-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 2px;
+}
+
+.stamp-address-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(43, 36, 56, 0.8);
+}
+
+.stamp-address-text svg {
+  flex-shrink: 0;
+  opacity: 0.78;
+}
+
+.stamp-address-row .map-btn.compact {
+  padding: 4px 10px;
+  font-size: 12px;
+  background: #FAF5EA;
+  border: 1.5px solid rgba(43, 36, 56, 0.22);
+}
+
+.stamp-address-row .map-btn.compact:hover {
+  background: #F3EAD7;
+  border-color: var(--line);
+}
+
+.stamp-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.stamp-primary-3d-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #FFFDF9;
+  background: var(--line);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  box-shadow: 2px 3px 0 var(--mint);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.stamp-primary-3d-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 3px 4px 0 var(--mint);
+}
+
+.stamp-primary-3d-btn.disabled {
+  background: #EDE6D8;
+  color: rgba(43, 36, 56, 0.55);
+  border-color: rgba(43, 36, 56, 0.28);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.stamp-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--line);
+  background: #FFFDF9;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: transform 0.14s ease, background 0.16s ease, box-shadow 0.14s ease;
+}
+
+.stamp-secondary-btn:hover {
+  transform: translateY(-1px);
+  background: #FAF5EA;
+}
+
+.stamp-secondary-btn.done {
+  background: var(--mint);
+  box-shadow: 2px 3px 0 rgba(43, 36, 56, 0.16);
+}
+
+.map-btn.compact {
+  padding: 6px 11px;
+  font-size: 12.5px;
+}
+
+.stamp-stub-empty-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.42;
+}
+
+.stamp-portal-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stamp-portal-showcase {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 18px;
+  background: #FFFDF9;
+  border: 2.5px solid var(--line);
+  border-radius: 24px;
+  padding: 18px;
+  box-shadow: 5px 6px 0 var(--mint);
+}
+
+.stamp-portal-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stamp-portal-media {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--line);
+}
+
+.stamp-portal-seal-float {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.stamp-portal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  text-align: left;
+}
+
+.stamp-portal-right {
+  background: #FAF5EA;
+  border: 1.8px solid rgba(43, 36, 56, 0.18);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stamp-grid-book {
+  background: #FAF4E6;
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  padding: 18px 20px;
+}
+
+.stamp-grid-heading {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--line);
+}
+
+.stamp-visa-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stamp-visa-card {
+  background: #FFFDF9;
+  border: 2px solid rgba(43, 36, 56, 0.25);
+  border-radius: 16px;
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stamp-visa-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--line);
+}
+
+.stamp-visa-card.active {
+  border-color: var(--line);
+  border-width: 2.3px;
+  box-shadow: 3px 4px 0 var(--mint);
+}
+
+.stamp-visa-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stamp-visa-stage {
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(43, 36, 56, 0.58);
+  letter-spacing: 0.04em;
+}
+
+.stamp-visa-title {
+  margin: 2px 0 4px;
+  font-size: 16.5px;
+  font-weight: 800;
+  color: var(--line);
+}
+
+.stamp-visa-cat {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #7A4B2A;
+}
+
+.stamp-visa-quote {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: rgba(43, 36, 56, 0.75);
+  background: #FAF5EA;
+  padding: 6px 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   별점 & 한줄리뷰 보드 공통
+   ========================================== */
+.stamp-review-board {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stamp-review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.stamp-review-head-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stamp-auth-login-chip {
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--line);
+  background: #FFFDF9;
+  border: 1.5px solid rgba(43, 36, 56, 0.28);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.stamp-auth-login-chip:hover {
+  background: var(--mint);
+  border-color: var(--line);
+}
+
+.stamp-auth-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  background: #FFFDF9;
+  border: 1.4px solid rgba(43, 36, 56, 0.24);
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: var(--line);
+}
+
+.stamp-auth-logout-btn {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(43, 36, 56, 0.62);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.stamp-auth-logout-btn:hover {
+  color: var(--line);
+}
+
+.stamp-review-title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--line);
+}
+
+.stamp-review-avg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #C97A1E;
+  font-size: 14px;
+}
+
+.stamp-review-avg strong {
+  color: var(--line);
+}
+
+.stamp-review-cnt {
+  font-size: 12px;
+  color: rgba(43, 36, 56, 0.6);
+}
+
+.stamp-review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: #FFFDF9;
+  border: 1.6px solid rgba(43, 36, 56, 0.22);
+  border-radius: 14px;
+  padding: 10px 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.stamp-review-form.nudge {
+  border-color: var(--line);
+  box-shadow: 0 0 0 3px var(--mint);
+  transform: translateY(-1px);
+}
+
+.stamp-review-form-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stamp-star-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.stamp-star-btn {
+  background: none;
+  border: 0;
+  padding: 2px;
+  color: rgba(43, 36, 56, 0.28);
+  cursor: pointer;
+  display: inline-flex;
+  transition: transform 0.12s ease, color 0.12s ease;
+}
+
+.stamp-star-btn.on {
+  color: #D48124;
+}
+
+.stamp-star-btn:hover {
+  transform: scale(1.15);
+}
+
+.stamp-star-score {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--line);
+  margin-left: 4px;
+}
+
+.stamp-input-author {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 5px 10px;
+  border: 1.5px solid rgba(43, 36, 56, 0.24);
+  border-radius: 8px;
+  background: #FAF6EE;
+  color: var(--line);
+  width: 148px;
+}
+
+.stamp-review-form-bottom {
+  display: flex;
+  gap: 6px;
+}
+
+.stamp-input-comment {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 10px;
+  border: 1.5px solid rgba(43, 36, 56, 0.24);
+  border-radius: 8px;
+  background: #FAF6EE;
+  color: var(--line);
+}
+
+.stamp-review-submit {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #FFFDF9;
+  background: var(--line);
+  border: 0;
+  border-radius: 8px;
+  padding: 0 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.stamp-review-empty {
+  margin: 4px 0;
+  font-size: 12.5px;
+  color: rgba(43, 36, 56, 0.58);
+  text-align: center;
+}
+
+.stamp-review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.stamp-review-item {
+  background: #FFFDF9;
+  border: 1.4px solid rgba(43, 36, 56, 0.15);
+  border-radius: 12px;
+  padding: 8px 11px;
+}
+
+.stamp-review-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.stamp-rev-author {
+  font-size: 12.5px;
+  color: var(--line);
+}
+
+.stamp-rev-stars {
+  display: inline-flex;
+  align-items: center;
+  color: #D48124;
+}
+
+.stamp-rev-stars svg {
+  width: 12px;
+  height: 12px;
+}
+
+.stamp-rev-date {
+  margin-left: auto;
+  font-size: 11px;
+  color: rgba(43, 36, 56, 0.5);
+}
+
+.stamp-rev-del-btn {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: #B24432;
+  background: none;
+  border: 0;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.stamp-rev-del-btn:hover {
+  text-decoration: underline;
+}
+
+.stamp-rev-comment {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(43, 36, 56, 0.88);
+  line-height: 1.42;
+}
+
+/* ==========================================
+   3초 소셜 간편 가입·로그인 미니 모달 (카카오 + Google)
+   ========================================== */
+.stamp-auth-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1005;
+  background: rgba(24, 19, 32, 0.58);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.stamp-auth-modal-card {
+  width: min(380px, 92vw);
+  background: #FFFDF9;
+  border: 2.5px solid var(--line);
+  border-radius: 22px;
+  padding: 18px 20px 20px;
+  box-shadow: 5px 6px 0 var(--mint);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  animation: fade 0.2s ease;
+}
+
+.stamp-auth-modal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stamp-auth-icon-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--mint);
+  border: 1.8px solid var(--line);
+  color: var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stamp-auth-close-x {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(43, 36, 56, 0.65);
+  background: none;
+  border: 0;
+  padding: 4px 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.stamp-auth-close-x:hover {
+  color: var(--line);
+}
+
+.stamp-auth-modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--line);
+  line-height: 1.3;
+  word-break: keep-all;
+}
+
+.stamp-auth-modal-desc {
+  margin: 0 0 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(43, 36, 56, 0.78);
+  word-break: keep-all;
+}
+
+.stamp-auth-btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.stamp-oauth-btn {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 11px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.stamp-oauth-btn:hover {
+  transform: translateY(-1.5px);
+}
+
+.stamp-oauth-btn.kakao {
+  background: #FEE500;
+  color: #191919;
+  border: 2px solid var(--line);
+  box-shadow: 2px 3px 0 rgba(43, 36, 56, 0.14);
+}
+
+.stamp-oauth-btn.google {
+  background: #FFFDF9;
+  color: var(--line);
+  border: 2px solid var(--line);
+  box-shadow: 2px 3px 0 rgba(43, 36, 56, 0.1);
+}
+
+.stamp-auth-error {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #B24432;
+  background: #FDF1EE;
+  border: 1.4px solid rgba(178, 68, 50, 0.28);
+  border-radius: 10px;
+  padding: 8px 10px;
+  word-break: keep-all;
+}
+
+.stamp-auth-info {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #1F5B52;
+  background: rgba(169, 232, 222, 0.35);
+  border: 1.4px solid rgba(46, 111, 101, 0.32);
+  border-radius: 10px;
+  padding: 8px 10px;
+  word-break: keep-all;
+}
+
+.stamp-auth-email-form {
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1.5px dashed rgba(43, 36, 56, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stamp-auth-email-label {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: rgba(43, 36, 56, 0.68);
+}
+
+.stamp-auth-email-row {
+  display: flex;
+  gap: 6px;
+}
+
+.stamp-auth-email-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 10px;
+  border: 1.5px solid rgba(43, 36, 56, 0.26);
+  border-radius: 9px;
+  background: #FAF6EE;
+  color: var(--line);
+}
+
+.stamp-auth-email-btn {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #FFFDF9;
+  background: var(--line);
+  border: 0;
+  border-radius: 9px;
+  padding: 0 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.stamp-auth-email-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.stamp-auth-demo-box {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1.5px dashed rgba(43, 36, 56, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.stamp-auth-demo-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: rgba(43, 36, 56, 0.65);
+  word-break: keep-all;
+}
+
+.stamp-auth-demo-btn {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--line);
+  background: #FAF4E6;
+  border: 1.5px solid rgba(43, 36, 56, 0.28);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.stamp-auth-demo-btn:hover {
+  background: var(--mint);
+  border-color: var(--line);
+}
+
+/* ==========================================
+   3D 공간 인라인 모달 뷰어 (djsj.pages.dev 등)
+   ========================================== */
+.stamp-3d-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(24, 19, 32, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.stamp-3d-modal-frame {
+  width: min(1180px, 95vw);
+  height: min(780px, 88vh);
+  background: #1F1929;
+  border: 2.5px solid var(--line);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.stamp-3d-modal-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 10px 16px;
+  background: #FFFDF9;
+  border-bottom: 2px solid var(--line);
+}
+
+.stamp-3d-modal-title-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--line);
+  font-size: 14.5px;
+}
+
+.stamp-3d-stamped-pill {
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--mint);
+  color: var(--line);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.stamp-3d-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stamp-3d-ext-link {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--line);
+  text-decoration: none;
+  padding: 5px 11px;
+  border: 1.6px solid var(--line);
+  border-radius: 999px;
+  background: #FAF5EA;
+}
+
+.stamp-3d-close-btn {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #FFFDF9;
+  background: var(--line);
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 13px;
+  cursor: pointer;
+}
+
+.stamp-3d-iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #231C2E;
+}
+
+@media (max-width: 780px) {
+  .stamp-passport-header {
+    padding: 6px 12px;
+    gap: 10px;
+  }
+
+  .stamp-whale-col {
+    width: 44px;
+  }
+
+  .stamp-portal-showcase {
+    grid-template-columns: 1fr;
+  }
+
+  .stamp-visa-grid {
     grid-template-columns: 1fr;
   }
 }

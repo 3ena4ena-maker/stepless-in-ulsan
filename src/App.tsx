@@ -1,9 +1,37 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useKtoCourseThumbs, fetchLiveKtoPetSpots } from './services/ulsanTourApi';
-
-type Lang = 'KR' | 'EN';
+import {
+  useKtoCourseThumbs,
+  fetchLiveKtoPetSpots,
+  getKtoThumbCaption,
+} from './services/ulsanTourApi';
+import {
+  Lang,
+  LANGUAGE_OPTIONS,
+  UI_TEXT,
+  getTasteCategoryLabel,
+  getTastePlaceLabel,
+  getCompanionLabel,
+  getDurationLabel,
+  getCourseTitle,
+  getCourseDesc,
+  getCourseBadge,
+  getCourseShortTab,
+  getCourseStops,
+  getCourseProgramInfo,
+  getCourseProgramNote,
+  getItineraryStopField,
+  getMapPinLabel,
+  getScheduleField,
+} from './i18n';
+import { StampTourSection } from './components/StampTourSection';
 type MainTab = 'home' | 'courses' | 'schedule';
-type CourseCategoryTab = 'itinerary' | 'pet' | 'gourmet' | 'attraction' | 'experience';
+type CourseCategoryTab =
+  | 'itinerary'
+  | 'stamp'
+  | 'pet'
+  | 'gourmet'
+  | 'attraction'
+  | 'experience';
 type PetSubTab = 'all' | 'walk' | 'park' | 'activity' | 'dining';
 type GourmetSubTab = 'all' | 'cafe' | 'brunch' | 'restaurant' | 'dessert';
 type AttractionSubTab = 'all' | 'nature' | 'coast' | 'heritage' | 'view';
@@ -2811,6 +2839,7 @@ function parseRouteFromPathname(pathname: string): {
     const sub2 = parts[3] as string | undefined;
     const validCategories: CourseCategoryTab[] = [
       'itinerary',
+      'stamp',
       'pet',
       'gourmet',
       'attraction',
@@ -3007,22 +3036,16 @@ interface KtoThumbnailRowProps {
 
 function KtoThumbnailRow({ presetKeys, fallbackKeyword, lang }: KtoThumbnailRowProps) {
   const thumbs = useKtoCourseThumbs(presetKeys, fallbackKeyword);
+  const ui = UI_TEXT[lang];
   if (thumbs.length === 0) return null;
 
   if (thumbs.length === 1) {
     const single = thumbs[0];
     return (
-      <div
-        className="kto-single-wrap"
-        aria-label={
-          lang === 'KR'
-            ? '한국관광공사 TourAPI 관광지 사진'
-            : 'Korea Tourism Organization TourAPI Photo'
-        }
-      >
+      <div className="kto-single-wrap" aria-label={ui.ktoPhotoSingleAria}>
         <img
           src={single.imageUrl}
-          alt={single.label[lang]}
+          alt={getKtoThumbCaption(single, lang)}
           className="kto-single-img"
           loading="lazy"
           onError={(e) => {
@@ -3035,29 +3058,25 @@ function KtoThumbnailRow({ presetKeys, fallbackKeyword, lang }: KtoThumbnailRowP
   }
 
   return (
-    <div
-      className="kto-thumbs"
-      aria-label={
-        lang === 'KR'
-          ? '한국관광공사 TourAPI 관광지 사진'
-          : 'Korea Tourism Organization TourAPI Photos'
-      }
-    >
-      {thumbs.map((thumb) => (
-        <div key={thumb.contentId || thumb.imageUrl} className="kto-thumb-item">
-          <img
-            src={thumb.imageUrl}
-            alt={thumb.label[lang]}
-            className="kto-thumb-img"
-            loading="lazy"
-            onError={(e) => {
-              const parent = e.currentTarget.parentElement;
-              if (parent) parent.style.display = 'none';
-            }}
-          />
-          <span className="kto-thumb-caption">{thumb.label[lang]}</span>
-        </div>
-      ))}
+    <div className="kto-thumbs" aria-label={ui.ktoPhotoMultiAria}>
+      {thumbs.map((thumb) => {
+        const caption = getKtoThumbCaption(thumb, lang);
+        return (
+          <div key={thumb.contentId || thumb.imageUrl} className="kto-thumb-item">
+            <img
+              src={thumb.imageUrl}
+              alt={caption}
+              className="kto-thumb-img"
+              loading="lazy"
+              onError={(e) => {
+                const parent = e.currentTarget.parentElement;
+                if (parent) parent.style.display = 'none';
+              }}
+            />
+            <span className="kto-thumb-caption">{caption}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -3107,7 +3126,16 @@ function CuratedCourseRow({
   const thumbs = useKtoCourseThumbs(course.ktoThumbKeys);
   const mainThumb = thumbs[0];
   const [thumbFailed, setThumbFailed] = useState(false);
-  const shortThumbTitle = course.title[lang].replace(/\s*\([^)]*\)/g, '').trim();
+  const ui = UI_TEXT[lang];
+  const localizedTitle = getCourseTitle(course, lang);
+  const localizedDesc = getCourseDesc(course, lang);
+  const localizedProgramInfo = getCourseProgramInfo(course, lang);
+  const localizedProgramNote = getCourseProgramNote(course, lang);
+  const localizedStops = getCourseStops(course, lang);
+  const shortThumbTitle = localizedTitle
+    .replace(/\s*\([^)]*\)/g, '')
+    .replace(/\s*（[^）]*）/g, '')
+    .trim();
   const mapQuery = getMapSearchQuery(course);
   const naverMapUrl = `https://map.naver.com/p/search/${encodeURIComponent(mapQuery)}`;
   const googleMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -3126,7 +3154,7 @@ function CuratedCourseRow({
           {mainThumb && !thumbFailed ? (
             <img
               src={mainThumb.imageUrl}
-              alt={mainThumb.label[lang]}
+              alt={getKtoThumbCaption(mainThumb, lang)}
               className="course-main-thumb"
               loading="lazy"
               onError={() => {
@@ -3138,7 +3166,7 @@ function CuratedCourseRow({
               {shortThumbTitle}
             </span>
           )}
-          <span className="course-title-text">{course.title[lang]}</span>
+          <span className="course-title-text">{localizedTitle}</span>
         </span>
         <span className="course-toggle-mark" aria-hidden="true">
           ▾
@@ -3147,37 +3175,37 @@ function CuratedCourseRow({
 
       {isExpanded && (
         <div className="course-detail-panel">
-          <p className="curated-desc">{course.desc[lang]}</p>
+          <p className="curated-desc">{localizedDesc}</p>
 
           <KtoThumbnailRow
             presetKeys={course.ktoThumbKeys}
             lang={lang}
           />
 
-          {course.programInfo && course.programInfo.length > 0 && (
+          {localizedProgramInfo.length > 0 && (
             <dl className="program-details">
-              {course.programInfo.map((row) => (
-                <React.Fragment key={row.label.KR}>
-                  <dt className="program-dt">{row.label[lang]}</dt>
-                  <dd className="program-dd">{row.value[lang]}</dd>
+              {localizedProgramInfo.map((row) => (
+                <React.Fragment key={row.key}>
+                  <dt className="program-dt">{row.label}</dt>
+                  <dd className="program-dd">{row.value}</dd>
                 </React.Fragment>
               ))}
             </dl>
           )}
 
-          {course.programNote && (
-            <p className="program-note">{course.programNote[lang]}</p>
+          {localizedProgramNote && (
+            <p className="program-note">{localizedProgramNote}</p>
           )}
 
-          {course.stops && course.stops[lang].length > 0 && (
+          {localizedStops.length > 0 && (
             <div className="curated-flow">
-              {course.stops[lang].map((stopName, idx) => (
+              {localizedStops.map((stopName, idx) => (
                 <React.Fragment key={stopName}>
                   <span className="flow-step">
                     <span className="flow-num">{idx + 1}</span>
                     <span>{stopName}</span>
                   </span>
-                  {idx < course.stops![lang].length - 1 && (
+                  {idx < localizedStops.length - 1 && (
                     <span className="flow-arrow">→</span>
                   )}
                 </React.Fragment>
@@ -3195,7 +3223,7 @@ function CuratedCourseRow({
               <span className="map-badge-dot naver-dot" aria-hidden="true">
                 N
               </span>
-              <span>{lang === 'KR' ? '네이버 지도' : 'Naver Map'}</span>
+              <span>{ui.naverMapBtn}</span>
             </a>
             <a
               href={googleMapUrl}
@@ -3206,7 +3234,7 @@ function CuratedCourseRow({
               <span className="map-badge-dot google-dot" aria-hidden="true">
                 G
               </span>
-              <span>{lang === 'KR' ? '구글 맵' : 'Google Maps'}</span>
+              <span>{ui.googleMapBtn}</span>
             </a>
           </div>
         </div>
@@ -3262,10 +3290,14 @@ const ULSAN_MAP_COORDS: Record<string, MapPinCoord> = {
   'gourmet-brunch-heydining': { x: 455, y: 318, dotX: 472, dotY: 358, shortKR: '헤이다이닝', shortEN: 'Hey Dining', dir: 'right', featured: true },
   'gourmet-brunch-orosalt': { x: 452, y: 152, dotX: 485, dotY: 185, shortKR: '오로솔트', shortEN: 'OROSALT', dir: 'right', featured: true },
   'gourmet-rest-bulgogi': { x: 132, y: 185, dotX: 182, dotY: 228, shortKR: '언양 한우불고기', shortEN: 'Eonyang Bulgogi', dir: 'right', featured: true },
+  'gourmet-rest-eonyang-bulgogi': { x: 132, y: 185, dotX: 182, dotY: 228, shortKR: '언양 한우불고기', shortEN: 'Eonyang Bulgogi', dir: 'right', featured: true },
   'gourmet-rest-mugeo-gondre': { x: 198, y: 348, dotX: 325, dotY: 348, shortKR: '곤드레 산나물밥집', shortEN: 'Gondre Rice', dir: 'right', featured: true },
   'gourmet-rest-seafood': { x: 612, y: 175, dotX: 645, dotY: 235, shortKR: '방어진 활어회센터', shortEN: 'Bangeojin Seafood', dir: 'right', featured: true },
+  'gourmet-rest-bangeojin-seafood': { x: 612, y: 175, dotX: 645, dotY: 235, shortKR: '방어진 활어회센터', shortEN: 'Bangeojin Seafood', dir: 'right', featured: true },
   'gourmet-rest-octopus': { x: 262, y: 456, dotX: 475, dotY: 468, shortKR: '간절곶 돌문어', shortEN: 'Octopus Dining', dir: 'right', featured: true },
+  'gourmet-rest-ganjeolgot-octopus': { x: 262, y: 456, dotX: 475, dotY: 468, shortKR: '간절곶 돌문어', shortEN: 'Octopus Dining', dir: 'right', featured: true },
   'gourmet-dessert-papason': { x: 148, y: 532, dotX: 255, dotY: 468, shortKR: '파파앤썬 베이커리', shortEN: 'Papa & Son', dir: 'right', featured: true },
+  'gourmet-dessert-papaandson': { x: 148, y: 532, dotX: 255, dotY: 468, shortKR: '파파앤썬 베이커리', shortEN: 'Papa & Son', dir: 'right', featured: true },
   'gourmet-dessert-bonmilk': { x: 525, y: 555, dotX: 568, dotY: 455, shortKR: '본밀크 디저트', shortEN: 'BONMILK', dir: 'right', featured: false },
 
   // 명소 (attraction)
@@ -3283,16 +3315,19 @@ const ULSAN_MAP_COORDS: Record<string, MapPinCoord> = {
 
   // 체험 (experience)
   'experience-tour-bangucheon-program': { x: 132, y: 185, dotX: 145, dotY: 335, shortKR: '반구천을 누비다', shortEN: 'Bangucheon Tour', dir: 'right', featured: true },
+  'experience-tour-whale-village': { x: 455, y: 318, dotX: 512, dotY: 358, shortKR: '고래문화마을·모노레일', shortEN: 'Whale Village', dir: 'right', featured: true },
   'experience-tour-whale-cruise': { x: 625, y: 332, dotX: 595, dotY: 336, shortKR: '고래바다여행선', shortEN: 'Whale Cruise', dir: 'right', featured: true },
   'experience-tour-monorail': { x: 455, y: 318, dotX: 512, dotY: 358, shortKR: '장생포 모노레일', shortEN: 'Monorail', dir: 'right', featured: true },
   'experience-workshop-whale-village': { x: 485, y: 182, dotX: 522, dotY: 348, shortKR: '고래문화마을 공방', shortEN: 'Whale Village', dir: 'right', featured: true },
   'experience-workshop-onggi': { x: 148, y: 532, dotX: 210, dotY: 468, shortKR: '외고산 옹기공방', shortEN: 'Onggi Workshop', dir: 'right', featured: true },
+  'experience-workshop-onggi-village': { x: 148, y: 532, dotX: 210, dotY: 468, shortKR: '외고산 옹기공방', shortEN: 'Onggi Workshop', dir: 'right', featured: true },
   'experience-museum-petroglyph': { x: 198, y: 348, dotX: 155, dotY: 355, shortKR: '울산암각화박물관', shortEN: 'Petroglyph Museum', dir: 'right', featured: true },
   'experience-museum-whale': { x: 492, y: 526, dotX: 535, dotY: 368, shortKR: '장생포 고래박물관', shortEN: 'Whale Museum', dir: 'right', featured: true },
   'experience-museum-ulsan': { x: 355, y: 416, dotX: 400, dotY: 332, shortKR: '울산박물관', shortEN: 'Ulsan Museum', dir: 'right', featured: true },
   'experience-activity-whale-eco': { x: 358, y: 492, dotX: 528, dotY: 375, shortKR: '고래생태체험관', shortEN: 'Whale Eco Center', dir: 'right', featured: true },
   'experience-activity-daewangam-bridge': { x: 612, y: 175, dotX: 565, dotY: 268, shortKR: '대왕암 출렁다리', shortEN: 'Suspension Bridge', dir: 'right', featured: true },
   'experience-activity-zoo': { x: 262, y: 456, dotX: 385, dotY: 368, shortKR: '울산대공원 동물원', shortEN: 'Grand Park Zoo', dir: 'right', featured: true },
+  'experience-activity-ulsan-zoo': { x: 262, y: 456, dotX: 385, dotY: 368, shortKR: '울산대공원 동물원', shortEN: 'Grand Park Zoo', dir: 'right', featured: true },
 };
 
 interface UlsanIllustratedMapProps {
@@ -3304,34 +3339,33 @@ interface UlsanIllustratedMapProps {
 interface CategoryLegendItem {
   key: string;
   color: string;
-  labelKR: string;
-  labelEN: string;
+  getLabel: (lang: Lang) => string;
 }
 
 const MAP_CATEGORY_LEGENDS: Partial<Record<CourseCategoryTab, CategoryLegendItem[]>> = {
   pet: [
-    { key: 'walk', color: '#3B8C62', labelKR: '산책명소', labelEN: 'Scenic Walks' },
-    { key: 'park', color: '#3A7BB8', labelKR: '펫파크·놀이터', labelEN: 'Pet Parks' },
-    { key: 'activity', color: '#DC5648', labelKR: '이색체험', labelEN: 'Activities' },
-    { key: 'dining', color: '#D48124', labelKR: '동반카페·식당', labelEN: 'Pet Cafes & Dining' },
+    { key: 'walk', color: '#3B8C62', getLabel: (l) => UI_TEXT[l].petSubWalk },
+    { key: 'park', color: '#3A7BB8', getLabel: (l) => UI_TEXT[l].petSubPark },
+    { key: 'activity', color: '#DC5648', getLabel: (l) => UI_TEXT[l].petSubActivity },
+    { key: 'dining', color: '#D48124', getLabel: (l) => UI_TEXT[l].petSubDining },
   ],
   gourmet: [
-    { key: 'cafe', color: '#DC5648', labelKR: '카페', labelEN: 'Cafes' },
-    { key: 'brunch', color: '#D48124', labelKR: '브런치', labelEN: 'Brunch' },
-    { key: 'restaurant', color: '#3B8C62', labelKR: '음식점', labelEN: 'Restaurants' },
-    { key: 'dessert', color: '#895B9E', labelKR: '디저트', labelEN: 'Desserts' },
+    { key: 'cafe', color: '#DC5648', getLabel: (l) => UI_TEXT[l].gourmetSubCafe },
+    { key: 'brunch', color: '#D48124', getLabel: (l) => UI_TEXT[l].gourmetSubBrunch },
+    { key: 'restaurant', color: '#3B8C62', getLabel: (l) => UI_TEXT[l].gourmetSubRestaurant },
+    { key: 'dessert', color: '#895B9E', getLabel: (l) => UI_TEXT[l].gourmetSubDessert },
   ],
   attraction: [
-    { key: 'nature', color: '#3B8C62', labelKR: '자연·정원', labelEN: 'Nature & Garden' },
-    { key: 'coast', color: '#3A7BB8', labelKR: '해안·일출', labelEN: 'Coast & Sunrise' },
-    { key: 'heritage', color: '#D48124', labelKR: '역사·문화유산', labelEN: 'Heritage' },
-    { key: 'view', color: '#895B9E', labelKR: '전망·야경', labelEN: 'View & Nightscape' },
+    { key: 'nature', color: '#3B8C62', getLabel: (l) => UI_TEXT[l].attractionSubNature },
+    { key: 'coast', color: '#3A7BB8', getLabel: (l) => UI_TEXT[l].attractionSubCoast },
+    { key: 'heritage', color: '#D48124', getLabel: (l) => UI_TEXT[l].attractionSubHeritage },
+    { key: 'view', color: '#895B9E', getLabel: (l) => UI_TEXT[l].attractionSubView },
   ],
   experience: [
-    { key: 'tour', color: '#3A7BB8', labelKR: '투어', labelEN: 'Tours' },
-    { key: 'workshop', color: '#D48124', labelKR: '공방', labelEN: 'Workshops' },
-    { key: 'museum', color: '#895B9E', labelKR: '미술관·박물관', labelEN: 'Museums' },
-    { key: 'activity', color: '#DC5648', labelKR: '체험', labelEN: 'Activities' },
+    { key: 'tour', color: '#3A7BB8', getLabel: (l) => UI_TEXT[l].experienceSubTour },
+    { key: 'workshop', color: '#D48124', getLabel: (l) => UI_TEXT[l].experienceSubWorkshop },
+    { key: 'museum', color: '#895B9E', getLabel: (l) => UI_TEXT[l].experienceSubMuseum },
+    { key: 'activity', color: '#DC5648', getLabel: (l) => UI_TEXT[l].experienceSubActivity },
   ],
 };
 
@@ -3421,31 +3455,31 @@ function UlsanIllustratedMap({ category, courses, lang }: UlsanIllustratedMapPro
     }
   };
 
-  const bannerTitles: Record<CourseCategoryTab, { main: string; subKR: string; subEN: string }> = {
+  const t = UI_TEXT[lang];
+  const bannerTitles: Record<CourseCategoryTab, { main: string; sub: string }> = {
     pet: {
       main: 'ULSAN PET TRAVEL MAP',
-      subKR: '반려동물 친화관광도시 울산 버킷리스트',
-      subEN: 'Pet-Friendly Ulsan Bucket List',
+      sub: t.bannerSubPet,
     },
     gourmet: {
       main: 'ULSAN GOURMET MAP',
-      subKR: '울산 식도락 & 감성 카페 버킷리스트',
-      subEN: 'Ulsan Foodie & Cafe Bucket List',
+      sub: t.bannerSubGourmet,
     },
     experience: {
       main: 'ULSAN EXPERIENCE MAP',
-      subKR: '울산 투어 · 공방 · 박물관 버킷리스트',
-      subEN: 'Ulsan Tours & Museums Bucket List',
+      sub: t.bannerSubExperience,
     },
     attraction: {
       main: 'ULSAN ATTRACTION MAP',
-      subKR: '울산 대표 명소 버킷리스트',
-      subEN: 'Ulsan Top Attractions Bucket List',
+      sub: t.bannerSubAttraction,
     },
     itinerary: {
       main: 'ULSAN TRAVEL MAP',
-      subKR: '울산 여행 버킷리스트',
-      subEN: 'Ulsan Travel Bucket List',
+      sub: t.bannerSubItinerary,
+    },
+    stamp: {
+      main: 'ULSAN STAMP TOUR MAP',
+      sub: t.catStamp,
     },
   };
 
@@ -3476,7 +3510,7 @@ function UlsanIllustratedMap({ category, courses, lang }: UlsanIllustratedMapPro
         <div
           className="map-category-legend"
           role="note"
-          aria-label={lang === 'KR' ? '카테고리별 번호 색상 안내' : 'Pin Color Legend by Category'}
+          aria-label={t.mapLegendAria}
         >
           {legendItems.map((item) => (
             <span key={item.key} className="map-legend-chip">
@@ -3485,7 +3519,7 @@ function UlsanIllustratedMap({ category, courses, lang }: UlsanIllustratedMapPro
                 style={{ backgroundColor: item.color }}
                 aria-hidden="true"
               />
-              <span>{lang === 'KR' ? item.labelKR : item.labelEN}</span>
+              <span>{item.getLabel(lang)}</span>
             </span>
           ))}
         </div>
@@ -3497,11 +3531,7 @@ function UlsanIllustratedMap({ category, courses, lang }: UlsanIllustratedMapPro
           className="ulsan-map-svg"
           viewBox="0 0 800 600"
           role="img"
-          aria-label={
-            lang === 'KR'
-              ? `${banner.subKR} 일러스트 지도`
-              : `${banner.subEN} Illustrated Map`
-          }
+          aria-label={`${banner.sub} ${t.mapSvgSuffix}`}
         >
           {/* 배경: 손그림 동화책 일러스트 지도 */}
           <image
@@ -3572,7 +3602,7 @@ function UlsanIllustratedMap({ category, courses, lang }: UlsanIllustratedMapPro
             const isSelected = course.id === selectedId;
             const isHovered = course.id === hoveredId;
             const isActive = isSelected || isHovered;
-            const placeName = lang === 'KR' ? coord.shortKR : coord.shortEN;
+            const placeName = getMapPinLabel(course.id, coord, lang);
             const pinX = coord.x;
             const pinY = coord.y;
 
@@ -3667,7 +3697,7 @@ function UlsanIllustratedMap({ category, courses, lang }: UlsanIllustratedMapPro
             >
               #{selectedIndex + 1}
             </span>
-            <span className="map-selected-badge">{selectedCourse.badge[lang]}</span>
+            <span className="map-selected-badge">{getCourseBadge(selectedCourse, lang)}</span>
           </div>
           <CuratedCourseRow
             course={selectedCourse}
@@ -3686,23 +3716,21 @@ function UlsanIllustratedMap({ category, courses, lang }: UlsanIllustratedMapPro
               ∾ ✦
             </span>
             <h2 className="bucket-title">
-              {lang === 'KR' ? banner.subKR : banner.subEN}
+              {banner.sub}
             </h2>
             <span className="bucket-flourish" aria-hidden="true">
               ✦ ∾
             </span>
           </div>
           <p className="bucket-sub">
-            {lang === 'KR'
-              ? '장소를 누르면 지도 위치와 상세 정보·네이버/구글 지도가 바로 표시됩니다.'
-              : 'Tap any place to highlight its map pin and view details & map links.'}
+            {t.bucketInstruction}
           </p>
 
           <div className="bucket-grid">
             {courses.map((course, idx) => {
               const isSelected = course.id === selectedId;
               const isChecked = checkedIds.includes(course.id);
-              const shortName = course.title[lang].replace(/\s*\([^)]*\)/g, '').trim();
+              const shortName = getCourseTitle(course, lang).replace(/\s*\([^)]*\)/g, '').trim();
               const itemPinColor = getCoursePinColor(course);
 
               return (
@@ -3716,11 +3744,7 @@ function UlsanIllustratedMap({ category, courses, lang }: UlsanIllustratedMapPro
                   <button
                     type="button"
                     className={`bucket-check ${isChecked ? 'checked' : ''}`}
-                    aria-label={
-                      lang === 'KR'
-                        ? `${shortName} 버킷리스트 체크`
-                        : `Check ${shortName}`
-                    }
+                    aria-label={t.bucketCheckAria(shortName)}
                     onClick={(e) => toggleCheck(course.id, e)}
                   >
                     {isChecked ? '✓' : ''}
@@ -3758,6 +3782,7 @@ function ItineraryCourseCard({ course, index, lang, onSelect }: ItineraryCourseC
   const coursePath = `/courses/itinerary/${course.id}`;
   const themeColor = course.themeColor || '#3A7BB8';
   const stops = course.itineraryStops || [];
+  const t = UI_TEXT[lang];
 
   return (
     <a
@@ -3770,7 +3795,7 @@ function ItineraryCourseCard({ course, index, lang, onSelect }: ItineraryCourseC
           {mainThumb && !thumbFailed ? (
             <img
               src={mainThumb.imageUrl}
-              alt={mainThumb.label[lang]}
+              alt={getKtoThumbCaption(mainThumb, lang)}
               className="itinerary-card-thumb"
               loading="lazy"
               onError={() => setThumbFailed(true)}
@@ -3790,14 +3815,14 @@ function ItineraryCourseCard({ course, index, lang, onSelect }: ItineraryCourseC
               className="itinerary-course-pill"
               style={{ backgroundColor: themeColor }}
             >
-              {course.badge[lang]}
+              {getCourseBadge(course, lang)}
             </span>
             <span className="itinerary-map-cta">
-              {lang === 'KR' ? '🗺️ 지도 동선 보기 →' : '🗺️ View Route Map →'}
+              {t.viewRouteMapCta}
             </span>
           </div>
-          <h2 className="itinerary-card-title">{course.title[lang]}</h2>
-          <p className="itinerary-card-desc">{course.desc[lang]}</p>
+          <h2 className="itinerary-card-title">{getCourseTitle(course, lang)}</h2>
+          <p className="itinerary-card-desc">{getCourseDesc(course, lang)}</p>
         </div>
       </div>
 
@@ -3812,7 +3837,7 @@ function ItineraryCourseCard({ course, index, lang, onSelect }: ItineraryCourseC
                 >
                   {st.step}
                 </span>
-                <span>{st.shortMapName[lang]}</span>
+                <span>{getItineraryStopField(course.id, st, 'shortMapName', lang)}</span>
               </span>
               {idx < stops.length - 1 && (
                 <span className="itinerary-step-arrow" aria-hidden="true">
@@ -3845,6 +3870,7 @@ function ItineraryCourseMapPage({
   const [hoveredStep, setHoveredStep] = useState<number | null>(null);
   const [checkedSteps, setCheckedSteps] = useState<number[]>([]);
   const detailRef = useRef<HTMLDivElement | null>(null);
+  const t = UI_TEXT[lang];
 
   useEffect(() => {
     setSelectedStep(1);
@@ -3898,6 +3924,8 @@ function ItineraryCourseMapPage({
       )}`
     : '#';
 
+  const courseTitle = getCourseTitle(course, lang);
+
   return (
     <div className="ulsan-map-poster itinerary-map-page">
       {/* 상단: 목록 돌아가기 + 다른 일정별 코스 바로 전환 탭 */}
@@ -3907,9 +3935,9 @@ function ItineraryCourseMapPage({
           className="itinerary-back-btn"
           onClick={(e) => onNavigate('/courses', e)}
         >
-          {lang === 'KR' ? '← 일정별 코스 목록' : '← All Courses'}
+          {t.backToCourseList}
         </a>
-        <div className="itinerary-switch-row" role="navigation" aria-label="코스 빠른 전환">
+        <div className="itinerary-switch-row" role="navigation" aria-label={t.quickSwitchCourseAria}>
           {allItineraryCourses.map((c) => {
             const cPath = `/courses/itinerary/${c.id}`;
             const isCurrent = c.id === course.id;
@@ -3930,7 +3958,7 @@ function ItineraryCourseMapPage({
                 }
                 onClick={(e) => onNavigate(cPath, e)}
               >
-                {c.shortTab ? c.shortTab[lang] : c.title[lang]}
+                {getCourseShortTab(c, lang)}
               </a>
             );
           })}
@@ -3943,10 +3971,10 @@ function ItineraryCourseMapPage({
           className="itinerary-course-pill"
           style={{ backgroundColor: course.themeColor || '#3A7BB8' }}
         >
-          {course.badge[lang]}
+          {getCourseBadge(course, lang)}
         </span>
-        <h2 className="itinerary-route-title">{course.title[lang]}</h2>
-        <p className="itinerary-route-sub">{course.desc[lang]}</p>
+        <h2 className="itinerary-route-title">{courseTitle}</h2>
+        <p className="itinerary-route-sub">{getCourseDesc(course, lang)}</p>
 
         {/* 스텝별 원형 번호 색상 안내 */}
         <div className="map-category-legend itinerary-step-legend">
@@ -3965,7 +3993,7 @@ function ItineraryCourseMapPage({
                 >
                   {st.step}
                 </span>
-                <span>{st.shortMapName[lang]}</span>
+                <span>{getItineraryStopField(course.id, st, 'shortMapName', lang)}</span>
               </button>
               {idx < stops.length - 1 && (
                 <span className="itinerary-step-arrow" aria-hidden="true">
@@ -3983,7 +4011,7 @@ function ItineraryCourseMapPage({
           className="ulsan-map-svg"
           viewBox="0 0 800 600"
           role="img"
-          aria-label={`${course.title[lang]} 지도 동선`}
+          aria-label={t.courseRouteMapAria(courseTitle)}
         >
           <image
             href="/ulsan-illustrated-map.jpg"
@@ -4083,7 +4111,7 @@ function ItineraryCourseMapPage({
             const isSelected = st.step === selectedStep;
             const isHovered = st.step === hoveredStep;
             const isActive = isSelected || isHovered;
-            const placeName = st.shortMapName[lang];
+            const placeName = getItineraryStopField(course.id, st, 'shortMapName', lang);
 
             return (
               <g
@@ -4170,18 +4198,18 @@ function ItineraryCourseMapPage({
             >
               STEP {activeStop.step}
             </span>
-            <span className="map-selected-badge">{activeStop.time[lang]}</span>
+            <span className="map-selected-badge">{getItineraryStopField(course.id, activeStop, 'time', lang)}</span>
           </div>
           <div className="itinerary-stop-body">
-            <h3 className="itinerary-stop-title">{activeStop.title[lang]}</h3>
-            <p className="curated-desc">{activeStop.desc[lang]}</p>
+            <h3 className="itinerary-stop-title">{getItineraryStopField(course.id, activeStop, 'title', lang)}</h3>
+            <p className="curated-desc">{getItineraryStopField(course.id, activeStop, 'desc', lang)}</p>
 
             <KtoThumbnailRow
               presetKeys={activeStop.ktoThumbKeys}
               lang={lang}
             />
 
-            <p className="program-note itinerary-stop-tip">{activeStop.tip[lang]}</p>
+            <p className="program-note itinerary-stop-tip">{getItineraryStopField(course.id, activeStop, 'tip', lang)}</p>
 
             <div className="map-links-row">
               <a
@@ -4193,7 +4221,7 @@ function ItineraryCourseMapPage({
                 <span className="map-badge-dot naver-dot" aria-hidden="true">
                   N
                 </span>
-                <span>{lang === 'KR' ? '네이버 지도' : 'Naver Map'}</span>
+                <span>{t.naverMapBtn}</span>
               </a>
               <a
                 href={googleMapUrl}
@@ -4204,7 +4232,7 @@ function ItineraryCourseMapPage({
                 <span className="map-badge-dot google-dot" aria-hidden="true">
                   G
                 </span>
-                <span>{lang === 'KR' ? '구글 맵' : 'Google Maps'}</span>
+                <span>{t.googleMapBtn}</span>
               </a>
             </div>
           </div>
@@ -4219,22 +4247,22 @@ function ItineraryCourseMapPage({
               ∾ ✦
             </span>
             <h2 className="bucket-title">
-              {lang === 'KR' ? '코스 순서별 경유지 체크리스트' : 'Course Route Checklist'}
+              {t.courseChecklistTitle}
             </h2>
             <span className="bucket-flourish" aria-hidden="true">
               ✦ ∾
             </span>
           </div>
           <p className="bucket-sub">
-            {lang === 'KR'
-              ? '경유지를 누르면 지도 위 번호 위치와 상세 사진·지도 링크가 바로 표시됩니다.'
-              : 'Tap any stop to highlight its location on the map and view photos & map links.'}
+            {t.courseChecklistSub}
           </p>
 
           <div className="itinerary-timeline-grid">
             {stops.map((st) => {
               const isSelected = st.step === selectedStep;
               const isChecked = checkedSteps.includes(st.step);
+              const stopTitle = getItineraryStopField(course.id, st, 'title', lang);
+              const stopTime = getItineraryStopField(course.id, st, 'time', lang);
               return (
                 <div
                   key={st.step}
@@ -4246,7 +4274,7 @@ function ItineraryCourseMapPage({
                   <button
                     type="button"
                     className={`bucket-check ${isChecked ? 'checked' : ''}`}
-                    aria-label={`${st.title[lang]} 방문 체크`}
+                    aria-label={t.stopCheckAria(stopTitle)}
                     onClick={(e) => toggleCheckStep(st.step, e)}
                   >
                     {isChecked ? '✓' : ''}
@@ -4259,9 +4287,9 @@ function ItineraryCourseMapPage({
                   </span>
                   <div className="itinerary-timeline-text">
                     <strong className="itinerary-timeline-name">
-                      {st.title[lang]}
+                      {stopTitle}
                     </strong>
-                    <span className="itinerary-timeline-time">{st.time[lang]}</span>
+                    <span className="itinerary-timeline-time">{stopTime}</span>
                   </div>
                 </div>
               );
@@ -4277,7 +4305,48 @@ export default function App() {
   const initialRoute = parseRouteFromPathname(window.location.pathname);
 
   const [lang, setLang] = useState<Lang>('KR');
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState<boolean>(false);
+  const langMenuRef = useRef<HTMLDivElement | null>(null);
   const [activeTab, setActiveTab] = useState<MainTab>(initialRoute.tab);
+
+  const t = UI_TEXT[lang];
+  const currentLangOption =
+    LANGUAGE_OPTIONS.find((opt) => opt.code === lang) || LANGUAGE_OPTIONS[0];
+
+  // Close language dropdown when clicking outside or pressing Escape
+  useEffect(() => {
+    if (!isLangMenuOpen) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setIsLangMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsLangMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLangMenuOpen]);
+
+  // Sync <html lang="..."> attribute for native typography & screen readers
+  useEffect(() => {
+    const htmlLangMap: Record<Lang, string> = {
+      KR: 'ko',
+      EN: 'en',
+      JA: 'ja',
+      ZH: 'zh-CN',
+      ES: 'es',
+      FR: 'fr',
+      DE: 'de',
+    };
+    document.documentElement.lang = htmlLangMap[lang];
+  }, [lang]);
 
   // Home curation states
   const [selectedTasteIds, setSelectedTasteIds] = useState<string[]>([]);
@@ -4346,7 +4415,7 @@ export default function App() {
         if (knownOrSteepIds.has(sp.contentId)) return;
         const cleanSp = sp.title.replace(/\s+/g, '');
         const alreadyIn = existingTitles.some(
-          (t) => t.includes(cleanSp) || cleanSp.includes(t.slice(0, 4)),
+          (tStr) => tStr.includes(cleanSp) || cleanSp.includes(tStr.slice(0, 4)),
         );
         if (!alreadyIn) {
           const isDining = sp.contentTypeId === '39';
@@ -4423,41 +4492,21 @@ export default function App() {
   // Update document.title dynamically for each distinct page URL
   useEffect(() => {
     if (activeTab === 'courses') {
-      const categoryTitles: Record<CourseCategoryTab, { KR: string; EN: string }> = {
-        itinerary: {
-          KR: '울산 일정별 추천 여행코스 | STEPLESS IN ULSAN',
-          EN: 'Ulsan Itinerary Courses | STEPLESS IN ULSAN',
-        },
-        pet: {
-          KR: '울산 반려동물 친화관광도시 추천 여행코스 | STEPLESS IN ULSAN',
-          EN: 'Ulsan Pet-Friendly Tourism City Courses | STEPLESS IN ULSAN',
-        },
-        gourmet: {
-          KR: '울산 식도락 추천 여행코스 | STEPLESS IN ULSAN',
-          EN: 'Ulsan Gourmet & Foodie Courses | STEPLESS IN ULSAN',
-        },
-        attraction: {
-          KR: '울산 대표 명소 추천 여행코스 | STEPLESS IN ULSAN',
-          EN: 'Ulsan Top Attractions | STEPLESS IN ULSAN',
-        },
-        experience: {
-          KR: '울산 체험·문화 추천 여행코스 | STEPLESS IN ULSAN',
-          EN: 'Ulsan Experiences & Museums | STEPLESS IN ULSAN',
-        },
+      const categoryTitles: Record<CourseCategoryTab, string> = {
+        itinerary: t.docTitleItinerary,
+        stamp: t.docTitleStamp,
+        pet: t.docTitlePet,
+        gourmet: t.docTitleGourmet,
+        attraction: t.docTitleAttraction,
+        experience: t.docTitleExperience,
       };
-      document.title = categoryTitles[courseCategory][lang];
+      document.title = categoryTitles[courseCategory];
     } else if (activeTab === 'schedule') {
-      document.title =
-        lang === 'KR'
-          ? '울산 주요일정표 & 축제 안내 | STEPLESS IN ULSAN'
-          : 'Ulsan Major Schedule & Festivals | STEPLESS IN ULSAN';
+      document.title = t.docTitleSchedule;
     } else {
-      document.title =
-        lang === 'KR'
-          ? '울산 여행 코스 추천 | STEPLESS IN ULSAN'
-          : 'Ulsan Travel Course Guide | STEPLESS IN ULSAN';
+      document.title = t.docTitleHome;
     }
-  }, [activeTab, courseCategory, lang]);
+  }, [activeTab, courseCategory, t]);
 
   // Navigate to a specific URL path and sync state
   const navigateToPath = (path: string, e?: React.MouseEvent<HTMLAnchorElement>) => {
@@ -4480,7 +4529,7 @@ export default function App() {
 
   const toggleTaste = (tasteId: string) => {
     setSelectedTasteIds((prev) =>
-      prev.includes(tasteId) ? prev.filter((t) => t !== tasteId) : [...prev, tasteId],
+      prev.includes(tasteId) ? prev.filter((item) => item !== tasteId) : [...prev, tasteId],
     );
   };
 
@@ -4513,7 +4562,7 @@ export default function App() {
     while (stops.length < targetCount && more) {
       more = false;
       pickIds.forEach((tid) => {
-        const tasteObj = TASTE_OPTIONS.find((t) => t.id === tid);
+        const tasteObj = TASTE_OPTIONS.find((taste) => taste.id === tid);
         const list = tasteObj ? tasteObj.places : [];
         const p = list[i];
         if (p && !stops.some((s) => s.id === p.id) && stops.length < targetCount) {
@@ -4555,10 +4604,12 @@ export default function App() {
 
   const whoObj = COMPANION_OPTIONS.find((c) => c.id === selectedCompanionIds[0]);
   const durObj = DURATION_OPTIONS.find((d) => d.id === selectedDurationId);
+  const whoLabel = whoObj ? getCompanionLabel(whoObj, lang) : '';
+  const durLabel = durObj ? getDurationLabel(durObj, lang) : '';
   const computedCourseTitle =
-    lang === 'KR'
-      ? [whoObj?.KR, durObj?.KR, '울산 코스'].filter(Boolean).join(' ')
-      : [whoObj?.EN, durObj?.EN, 'Ulsan Course'].filter(Boolean).join(' · ');
+    lang === 'KR' || lang === 'JA' || lang === 'ZH'
+      ? [whoLabel, durLabel, t.customCourseSuffix].filter(Boolean).join(' ')
+      : [whoLabel, durLabel, t.customCourseSuffix].filter(Boolean).join(' · ');
 
   const n = courseStops.length;
   const svgHeight = n * 120 + 90;
@@ -4615,7 +4666,7 @@ export default function App() {
         <a
           href="/"
           className="stepless-logo"
-          title={lang === 'KR' ? 'STEPLESS IN ULSAN 홈으로 이동' : 'Go to STEPLESS IN ULSAN Home'}
+          title={t.logoTitle}
           onClick={(e) => navigateToPath('/', e)}
         >
           <span>STEPLESS</span>
@@ -4625,7 +4676,7 @@ export default function App() {
         {/* Representative 3 Main Tabs with distinct URLs (/, /courses, /schedule) */}
         <nav
           className="main-tabs"
-          aria-label={lang === 'KR' ? '대표 메뉴 탭' : 'Main Navigation Tabs'}
+          aria-label={t.mainNavAria}
         >
           <a
             href="/"
@@ -4633,7 +4684,7 @@ export default function App() {
             className="main-tab-btn"
             onClick={(e) => navigateToPath('/', e)}
           >
-            {lang === 'KR' ? '홈' : 'Home'}
+            {t.navHome}
           </a>
           <a
             href="/courses"
@@ -4641,7 +4692,7 @@ export default function App() {
             className="main-tab-btn"
             onClick={(e) => navigateToPath('/courses', e)}
           >
-            {lang === 'KR' ? '추천 여행코스' : 'Recommended Courses'}
+            {t.navCourses}
           </a>
           <a
             href="/schedule"
@@ -4649,26 +4700,82 @@ export default function App() {
             className="main-tab-btn"
             onClick={(e) => navigateToPath('/schedule', e)}
           >
-            {lang === 'KR' ? '울산 주요일정표' : 'Ulsan Schedule'}
+            {t.navSchedule}
           </a>
         </nav>
 
-        <div className="lang-switch" role="group" aria-label="Language Switcher">
+        {/* Compact Language Selector Button + Dropdown Popover (7 Languages) */}
+        <div className="lang-dropdown" ref={langMenuRef}>
           <button
             type="button"
-            className={`lang-btn ${lang === 'KR' ? 'active' : ''}`}
-            onClick={() => setLang('KR')}
+            className={`lang-dropdown-btn ${isLangMenuOpen ? 'open' : ''}`}
+            aria-label={t.langButtonAria}
+            aria-haspopup="listbox"
+            aria-expanded={isLangMenuOpen}
+            onClick={() => setIsLangMenuOpen((prev) => !prev)}
           >
-            한국어
+            <svg
+              className="lang-globe-icon"
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="10"
+                cy="10"
+                r="7.8"
+                stroke="currentColor"
+                strokeWidth="1.7"
+              />
+              <ellipse
+                cx="10"
+                cy="10"
+                rx="3.6"
+                ry="7.8"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M2.6 10h14.8M4.2 6.2h11.6M4.2 13.8h11.6"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="lang-current-label">{currentLangOption.nativeName}</span>
+            <span className="lang-chevron" aria-hidden="true">
+              ▾
+            </span>
           </button>
-          <span className="lang-divider">|</span>
-          <button
-            type="button"
-            className={`lang-btn ${lang === 'EN' ? 'active' : ''}`}
-            onClick={() => setLang('EN')}
-          >
-            English
-          </button>
+
+          {isLangMenuOpen && (
+            <ul
+              className="lang-dropdown-menu"
+              role="listbox"
+              aria-label="Language selection"
+            >
+              {LANGUAGE_OPTIONS.map((option) => {
+                const isSelected = option.code === lang;
+                return (
+                  <li key={option.code} role="option" aria-selected={isSelected}>
+                    <button
+                      type="button"
+                      className={`lang-dropdown-item ${isSelected ? 'active' : ''}`}
+                      onClick={() => {
+                        setLang(option.code);
+                        setIsLangMenuOpen(false);
+                      }}
+                    >
+                      <span className="lang-item-native">{option.nativeName}</span>
+                      <span className="lang-item-code">
+                        {isSelected ? '✓' : option.shortLabel}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </header>
 
@@ -4680,21 +4787,13 @@ export default function App() {
           {/* 1. 상단: 부산 → 울산 오는 3가지 방법 */}
           <section
             className="how-to-come"
-            aria-label={
-              lang === 'KR'
-                ? '부산에서 울산으로 오는 3가지 방법'
-                : '3 Ways to Get to Ulsan from Busan'
-            }
+            aria-label={t.howSectionAria}
           >
             <h2 className="how-title">
-              {lang === 'KR'
-                ? '부산에서 울산, 어떻게 올까요?'
-                : 'How to Get to Ulsan from Busan?'}
+              {t.howTitle}
             </h2>
             <p className="how-sub">
-              {lang === 'KR'
-                ? '출발지와 여행 코스에 맞춰 가장 편한 방법을 골라보세요!'
-                : 'Pick the easiest way to hop over from Busan to Ulsan!'}
+              {t.howSubtitle}
             </p>
 
             <div className="how-grid">
@@ -4704,7 +4803,7 @@ export default function App() {
                   className="how-doodle"
                   viewBox="0 0 130 90"
                   role="img"
-                  aria-label="KTX 고속열차 일러스트"
+                  aria-label={t.ktxDoodleAria}
                 >
                   <g className="fl">
                     {/* Speed lines */}
@@ -4793,20 +4892,16 @@ export default function App() {
                   </g>
                 </svg>
                 <span className="how-badge">
-                  {lang === 'KR' ? '부산역 → 울산역 (약 20분)' : 'Busan Stn. → Ulsan Stn. (20m)'}
+                  {t.ktxBadge}
                 </span>
                 <h3 className="how-name">
-                  {lang === 'KR' ? 'KTX 타고 울산역 하차' : 'KTX to Ulsan Station'}
+                  {t.ktxName}
                 </h3>
                 <p className="how-desc">
-                  {lang === 'KR'
-                    ? '부산역에서 KTX를 타면 슈웅~ 눈 깜짝할 새 울산역에 도착해요!'
-                    : 'Hop on the KTX at Busan Station and arrive at Ulsan Station in just 20 minutes!'}
+                  {t.ktxDesc}
                 </p>
                 <p className="how-tip">
-                  {lang === 'KR'
-                    ? '반구대 암각화 · 언양불고기 갈 때 딱!'
-                    : 'Best for Bangudae Petroglyphs & Eonyang Bulgogi'}
+                  {t.ktxTip}
                 </p>
               </div>
 
@@ -4816,7 +4911,7 @@ export default function App() {
                   className="how-doodle"
                   viewBox="0 0 130 90"
                   role="img"
-                  aria-label="동해선 전철 일러스트"
+                  aria-label={t.donghaeDoodleAria}
                 >
                   <g className="fl" style={{ animationDelay: '0.6s' }}>
                     {/* Pantograph on roof */}
@@ -4907,22 +5002,16 @@ export default function App() {
                   </g>
                 </svg>
                 <span className="how-badge">
-                  {lang === 'KR'
-                    ? '부전·센텀·기장 → 태화강역'
-                    : 'Bujeon / BEXCO → Taehwagang Stn.'}
+                  {t.donghaeBadge}
                 </span>
                 <h3 className="how-name">
-                  {lang === 'KR' ? '동해선 타고 태화강역 하차' : 'Donghae Line to Taehwagang'}
+                  {t.donghaeName}
                 </h3>
                 <p className="how-desc">
-                  {lang === 'KR'
-                    ? '교통카드 찍고 동해선 전철 타면 울산 중심 태화강역에서 바로 내려요!'
-                    : 'Tap your transit card on the Donghae Line and step right into downtown Ulsan!'}
+                  {t.donghaeDesc}
                 </p>
                 <p className="how-tip">
-                  {lang === 'KR'
-                    ? '태화강 국가정원 · 장생포 · 대왕암 갈 때 최고!'
-                    : 'Best for National Garden, Jangsaengpo & Daewangam'}
+                  {t.donghaeTip}
                 </p>
               </div>
 
@@ -4932,7 +5021,7 @@ export default function App() {
                   className="how-doodle"
                   viewBox="0 0 130 90"
                   role="img"
-                  aria-label="노포역 버스 일러스트"
+                  aria-label={t.busDoodleAria}
                 >
                   <g className="fl" style={{ animationDelay: '1.2s' }}>
                     {/* Little puff of happy exhaust */}
@@ -5031,20 +5120,16 @@ export default function App() {
                   </g>
                 </svg>
                 <span className="how-badge">
-                  {lang === 'KR' ? '부산 노포역 → 울산' : 'Busan Nopo Stn. → Ulsan'}
+                  {t.busBadge}
                 </span>
                 <h3 className="how-name">
-                  {lang === 'KR' ? '노포역에서 버스 타고 오기' : 'Express Bus from Nopo Stn.'}
+                  {t.busName}
                 </h3>
                 <p className="how-desc">
-                  {lang === 'KR'
-                    ? '부산 1호선 노포역 종합버스터미널에서 버스를 타고 편하게 올 수 있어요!'
-                    : 'Catch a comfortable bus directly from Busan Line 1 Nopo Station Terminal!'}
+                  {t.busDesc}
                 </p>
                 <p className="how-tip">
-                  {lang === 'KR'
-                    ? '배차 간격이 짧아 언제든 부릉부릉 출발!'
-                    : 'Frequent departures for easy, flexible trips'}
+                  {t.busTip}
                 </p>
               </div>
             </div>
@@ -5062,22 +5147,20 @@ export default function App() {
               <svg
                 viewBox="0 0 215 170"
                 role="img"
-                aria-label={lang === 'KR' ? '결 고래' : 'Gyeol Whale'}
+                aria-label={t.whaleAria}
               >
                 <WhaleInnerGroup mood="smile" />
               </svg>
             </div>
 
             <h1 className="ask-title">
-              {lang === 'KR'
-                ? '어떤 울산 여행을 원해요?'
-                : 'What kind of Ulsan trip do you want?'}
+              {t.heroTitle}
             </h1>
 
             <fieldset
               className="group"
               id="g1"
-              aria-label={lang === 'KR' ? '취향 10가지' : '10 Travel Vibes'}
+              aria-label={t.tasteGroupAria}
             >
               {TASTE_OPTIONS.map((taste) => {
                 const pressed = selectedTasteIds.includes(taste.id);
@@ -5089,7 +5172,7 @@ export default function App() {
                     aria-pressed={pressed}
                     onClick={() => toggleTaste(taste.id)}
                   >
-                    {taste[lang]}
+                    {getTasteCategoryLabel(taste, lang)}
                   </button>
                 );
               })}
@@ -5100,7 +5183,7 @@ export default function App() {
             <fieldset
               className="group"
               id="g2"
-              aria-label={lang === 'KR' ? '누구와' : 'Companion'}
+              aria-label={t.companionGroupAria}
             >
               {COMPANION_OPTIONS.map((companion) => {
                 const pressed = selectedCompanionIds.includes(companion.id);
@@ -5112,7 +5195,7 @@ export default function App() {
                     aria-pressed={pressed}
                     onClick={() => toggleCompanion(companion.id)}
                   >
-                    {companion[lang]}
+                    {getCompanionLabel(companion, lang)}
                   </button>
                 );
               })}
@@ -5123,7 +5206,7 @@ export default function App() {
             <fieldset
               className="group"
               id="g3"
-              aria-label={lang === 'KR' ? '일정 시간' : 'Trip Duration'}
+              aria-label={t.durationGroupAria}
             >
               {DURATION_OPTIONS.map((item) => {
                 const pressed = selectedDurationId === item.id;
@@ -5135,14 +5218,14 @@ export default function App() {
                     aria-pressed={pressed}
                     onClick={() => toggleDuration(item.id)}
                   >
-                    {item[lang]}
+                    {getDurationLabel(item, lang)}
                   </button>
                 );
               })}
             </fieldset>
 
             <button type="button" className="go" id="go" onClick={handleBuildCourse}>
-              {lang === 'KR' ? '내 코스 만들기' : 'Build My Course'}
+              {t.buildCourseBtn}
             </button>
           </section>
 
@@ -5185,10 +5268,10 @@ export default function App() {
                           y={p[1] + 6}
                           textAnchor={isLeft ? 'start' : 'end'}
                           fontFamily="Gowun Dodum"
-                          fontSize={lang === 'KR' ? '17' : '15'}
+                          fontSize={lang === 'KR' || lang === 'JA' || lang === 'ZH' ? '16.5' : '14.5'}
                           fill="var(--line)"
                         >
-                          {stop[lang]}
+                          {getTastePlaceLabel(stop, lang)}
                         </text>
                       </g>
                     );
@@ -5211,7 +5294,7 @@ export default function App() {
               )}
             </div>
             <button type="button" className="redo" id="redo" onClick={handleRedo}>
-              {lang === 'KR' ? '다시 고르기' : 'Pick Again'}
+              {t.pickAgainBtn}
             </button>
           </section>
         </>
@@ -5223,53 +5306,55 @@ export default function App() {
       {activeTab === 'courses' && (
         <section
           className="tab-section"
-          aria-label={lang === 'KR' ? '추천 여행코스' : 'Recommended Courses'}
+          aria-label={t.navCourses}
         >
           <div className="blob" />
-          <div style={{ width: '140px', marginBottom: '4px' }}>
-            <svg viewBox="0 0 215 170" role="img" aria-label="결 고래">
-              <WhaleInnerGroup mood="happy" />
-            </svg>
-          </div>
+          {courseCategory !== 'stamp' && (
+            <div style={{ width: '140px', marginBottom: '4px' }}>
+              <svg viewBox="0 0 215 170" role="img" aria-label={t.whaleAria}>
+                <WhaleInnerGroup mood="happy" />
+              </svg>
+            </div>
+          )}
 
           <h1 className="ask-title">
-            {lang === 'KR' ? '울산 추천 여행코스' : 'Recommended Ulsan Courses'}
+            {courseCategory === 'stamp' ? t.catStamp : t.coursesTitle}
           </h1>
 
           <nav
             className="group"
-            aria-label={lang === 'KR' ? '추천 여행코스 카테고리' : 'Course Categories'}
+            aria-label={t.courseCatAria}
           >
             {[
               {
                 id: 'itinerary' as const,
                 path: '/courses',
-                KR: '일정별 코스',
-                EN: 'By Schedule',
+                label: t.catItinerary,
+              },
+              {
+                id: 'stamp' as const,
+                path: '/courses/stamp',
+                label: t.catStamp,
               },
               {
                 id: 'pet' as const,
                 path: '/courses/pet',
-                KR: '반려동물',
-                EN: 'Pet-Friendly',
+                label: t.catPet,
               },
               {
                 id: 'gourmet' as const,
                 path: '/courses/gourmet',
-                KR: '식도락',
-                EN: 'Gourmet',
+                label: t.catGourmet,
               },
               {
                 id: 'attraction' as const,
                 path: '/courses/attraction',
-                KR: '명소',
-                EN: 'Attractions',
+                label: t.catAttraction,
               },
               {
                 id: 'experience' as const,
                 path: '/courses/experience',
-                KR: '체험',
-                EN: 'Experiences',
+                label: t.catExperience,
               },
             ].map((cat) => (
               <a
@@ -5279,7 +5364,7 @@ export default function App() {
                 aria-current={courseCategory === cat.id ? 'page' : undefined}
                 onClick={(e) => navigateToPath(cat.path, e)}
               >
-                {cat[lang]}
+                {cat.label}
               </a>
             ))}
           </nav>
@@ -5288,47 +5373,38 @@ export default function App() {
             <>
               <div className="pet-city-banner" role="note">
                 <p className="pet-city-title">
-                  {lang === 'KR'
-                    ? '울산광역시는 문화체육관광부와 한국관광공사가 선정한 전국 최초의 광역\u00A0지자체 ‘반려동물\u00A0친화관광도시’입니다.'
-                    : 'Ulsan Metropolitan City is Korea’s first metropolitan government designated as a “Pet-Friendly\u00A0Tourism\u00A0City” by the MCST and KTO.'}
+                  {t.petCityBanner}
                 </p>
               </div>
               <nav
                 className="sub-group"
-                aria-label={
-                  lang === 'KR' ? '반려동물 세부 카테고리' : 'Pet-Friendly Sub-categories'
-                }
+                aria-label={t.petSubAria}
               >
                 {[
                   {
                     id: 'all' as const,
                     path: '/courses/pet',
-                    KR: '전체',
-                    EN: 'All',
+                    label: t.subAll,
                   },
                   {
                     id: 'walk' as const,
                     path: '/courses/pet/walk',
-                    KR: '산책명소',
-                    EN: 'Walks & Parks',
+                    label: t.petSubWalk,
                   },
                   {
                     id: 'park' as const,
                     path: '/courses/pet/park',
-                    KR: '펫파크·놀이터',
-                    EN: 'Pet Parks',
+                    label: t.petSubPark,
                   },
                   {
                     id: 'activity' as const,
                     path: '/courses/pet/activity',
-                    KR: '이색체험',
-                    EN: 'Activities',
+                    label: t.petSubActivity,
                   },
                   {
                     id: 'dining' as const,
                     path: '/courses/pet/dining',
-                    KR: '동반카페·식당',
-                    EN: 'Dining & Cafes',
+                    label: t.petSubDining,
                   },
                 ].map((sub) => (
                   <a
@@ -5338,7 +5414,7 @@ export default function App() {
                     aria-current={petSub === sub.id ? 'page' : undefined}
                     onClick={(e) => navigateToPath(sub.path, e)}
                   >
-                    {sub[lang]}
+                    {sub.label}
                   </a>
                 ))}
               </nav>
@@ -5348,40 +5424,33 @@ export default function App() {
           {courseCategory === 'gourmet' && (
             <nav
               className="sub-group"
-              aria-label={
-                lang === 'KR' ? '식도락 세부 카테고리' : 'Gourmet Sub-categories'
-              }
+              aria-label={t.gourmetSubAria}
             >
               {[
                 {
                   id: 'all' as const,
                   path: '/courses/gourmet',
-                  KR: '전체',
-                  EN: 'All',
+                  label: t.subAll,
                 },
                 {
                   id: 'cafe' as const,
                   path: '/courses/gourmet/cafe',
-                  KR: '카페',
-                  EN: 'Cafes',
+                  label: t.gourmetSubCafe,
                 },
                 {
                   id: 'brunch' as const,
                   path: '/courses/gourmet/brunch',
-                  KR: '브런치',
-                  EN: 'Brunch',
+                  label: t.gourmetSubBrunch,
                 },
                 {
                   id: 'restaurant' as const,
                   path: '/courses/gourmet/restaurant',
-                  KR: '음식점',
-                  EN: 'Restaurants',
+                  label: t.gourmetSubRestaurant,
                 },
                 {
                   id: 'dessert' as const,
                   path: '/courses/gourmet/dessert',
-                  KR: '디저트',
-                  EN: 'Desserts',
+                  label: t.gourmetSubDessert,
                 },
               ].map((sub) => (
                 <a
@@ -5391,7 +5460,7 @@ export default function App() {
                   aria-current={gourmetSub === sub.id ? 'page' : undefined}
                   onClick={(e) => navigateToPath(sub.path, e)}
                 >
-                  {sub[lang]}
+                  {sub.label}
                 </a>
               ))}
             </nav>
@@ -5400,40 +5469,33 @@ export default function App() {
           {courseCategory === 'attraction' && (
             <nav
               className="sub-group"
-              aria-label={
-                lang === 'KR' ? '명소 세부 카테고리' : 'Attraction Sub-categories'
-              }
+              aria-label={t.attractionSubAria}
             >
               {[
                 {
                   id: 'all' as const,
                   path: '/courses/attraction',
-                  KR: '전체',
-                  EN: 'All',
+                  label: t.subAll,
                 },
                 {
                   id: 'nature' as const,
                   path: '/courses/attraction/nature',
-                  KR: '자연·정원',
-                  EN: 'Nature & Garden',
+                  label: t.attractionSubNature,
                 },
                 {
                   id: 'coast' as const,
                   path: '/courses/attraction/coast',
-                  KR: '해안·일출',
-                  EN: 'Coast & Sunrise',
+                  label: t.attractionSubCoast,
                 },
                 {
                   id: 'heritage' as const,
                   path: '/courses/attraction/heritage',
-                  KR: '역사·문화유산',
-                  EN: 'Heritage',
+                  label: t.attractionSubHeritage,
                 },
                 {
                   id: 'view' as const,
                   path: '/courses/attraction/view',
-                  KR: '전망·야경',
-                  EN: 'View & Nightscape',
+                  label: t.attractionSubView,
                 },
               ].map((sub) => (
                 <a
@@ -5443,7 +5505,7 @@ export default function App() {
                   aria-current={attractionSub === sub.id ? 'page' : undefined}
                   onClick={(e) => navigateToPath(sub.path, e)}
                 >
-                  {sub[lang]}
+                  {sub.label}
                 </a>
               ))}
             </nav>
@@ -5452,40 +5514,33 @@ export default function App() {
           {courseCategory === 'experience' && (
             <nav
               className="sub-group"
-              aria-label={
-                lang === 'KR' ? '체험 세부 카테고리' : 'Experience Sub-categories'
-              }
+              aria-label={t.experienceSubAria}
             >
               {[
                 {
                   id: 'all' as const,
                   path: '/courses/experience',
-                  KR: '전체',
-                  EN: 'All',
+                  label: t.subAll,
                 },
                 {
                   id: 'tour' as const,
                   path: '/courses/experience/tour',
-                  KR: '투어',
-                  EN: 'Tours',
+                  label: t.experienceSubTour,
                 },
                 {
                   id: 'workshop' as const,
                   path: '/courses/experience/workshop',
-                  KR: '공방',
-                  EN: 'Workshops',
+                  label: t.experienceSubWorkshop,
                 },
                 {
                   id: 'museum' as const,
                   path: '/courses/experience/museum',
-                  KR: '미술관박물관',
-                  EN: 'Museums & Art',
+                  label: t.experienceSubMuseum,
                 },
                 {
                   id: 'activity' as const,
                   path: '/courses/experience/activity',
-                  KR: '체험',
-                  EN: 'Activities',
+                  label: t.experienceSubActivity,
                 },
               ].map((sub) => (
                 <a
@@ -5495,7 +5550,7 @@ export default function App() {
                   aria-current={experienceSub === sub.id ? 'page' : undefined}
                   onClick={(e) => navigateToPath(sub.path, e)}
                 >
-                  {sub[lang]}
+                  {sub.label}
                 </a>
               ))}
             </nav>
@@ -5503,7 +5558,16 @@ export default function App() {
 
           <div className="sep" />
 
-          {courseCategory === 'itinerary' ? (
+          {courseCategory === 'stamp' ? (
+            <StampTourSection
+              lang={lang}
+              whaleMascot={
+                <svg viewBox="0 0 215 170" role="img" aria-label={t.whaleAria}>
+                  <WhaleInnerGroup mood="happy" />
+                </svg>
+              }
+            />
+          ) : courseCategory === 'itinerary' ? (
             itineraryCourseId ? (
               <ItineraryCourseMapPage
                 course={
@@ -5560,46 +5624,41 @@ export default function App() {
       {activeTab === 'schedule' && (
         <section
           className="tab-section"
-          aria-label={lang === 'KR' ? '울산 주요일정표' : 'Ulsan Schedule'}
+          aria-label={t.navSchedule}
         >
           <div className="blob" />
           <div style={{ width: '140px', marginBottom: '4px' }}>
-            <svg viewBox="0 0 215 170" role="img" aria-label="결 고래">
+            <svg viewBox="0 0 215 170" role="img" aria-label={t.whaleAria}>
               <WhaleInnerGroup mood="smile" />
             </svg>
           </div>
 
           <h1 className="ask-title">
-            {lang === 'KR' ? '울산 주요일정표' : 'Ulsan Major Schedule & Festivals'}
+            {t.scheduleTitle}
           </h1>
           <p className="tab-subtitle">
-            {lang === 'KR'
-              ? '계절별 울산 대표 축제와 연중 상시 야간개장·크루즈 일정을 확인하세요.'
-              : 'Explore Ulsan’s seasonal festivals, night illuminations, and whale cruise schedules.'}
+            {t.scheduleSubtitle}
           </p>
 
-          <nav className="group" aria-label={lang === 'KR' ? '일정 계절별 보기' : 'Schedule Seasons'}>
+          <nav className="group" aria-label={t.scheduleSeasonAria}>
             {[
-              { id: 'all_seasons' as const, path: '/schedule', KR: '전체 일정', EN: 'All Events' },
-              { id: 'all' as const, path: '/schedule/all', KR: '연중 상시', EN: 'Year-Round' },
-              { id: 'spring' as const, path: '/schedule/spring', KR: '봄 (5월)', EN: 'Spring' },
+              { id: 'all_seasons' as const, path: '/schedule', label: t.seasonAllEvents },
+              { id: 'all' as const, path: '/schedule/all', label: t.seasonYearRound },
+              { id: 'spring' as const, path: '/schedule/spring', label: t.seasonSpring },
               {
                 id: 'summer' as const,
                 path: '/schedule/summer',
-                KR: '여름 (7~8월)',
-                EN: 'Summer',
+                label: t.seasonSummer,
               },
               {
                 id: 'autumn' as const,
                 path: '/schedule/autumn',
-                KR: '가을 (9~10월)',
-                EN: 'Autumn',
+                label: t.seasonAutumn,
               },
               {
                 id: 'winter' as const,
                 path: '/schedule/winter',
-                KR: '겨울·해맞이',
-                EN: 'Winter Sunrise',
+                label: t.seasonWinter,
               },
             ].map((s) => (
               <a
@@ -5609,7 +5668,7 @@ export default function App() {
                 aria-current={scheduleSeasonFilter === s.id ? 'page' : undefined}
                 onClick={(e) => navigateToPath(s.path, e)}
               >
-                {s[lang]}
+                {s.label}
               </a>
             ))}
           </nav>
@@ -5619,16 +5678,16 @@ export default function App() {
           <div className="curated-list">
             {filteredSchedules.map((item) => (
               <article key={item.id} className="curated-item">
-                <span className="curated-badge">{item.period[lang]}</span>
-                <h2 className="curated-title">{item.title[lang]}</h2>
-                <p className="curated-desc">{item.desc[lang]}</p>
+                <span className="curated-badge">{getScheduleField(item, 'period', lang)}</span>
+                <h2 className="curated-title">{getScheduleField(item, 'title', lang)}</h2>
+                <p className="curated-desc">{getScheduleField(item, 'desc', lang)}</p>
                 <KtoThumbnailRow
                   presetKeys={item.ktoThumbKeys}
                   fallbackKeyword={item.title.KR}
                   lang={lang}
                 />
                 <div className="schedule-meta">
-                  <span>📍 {item.place[lang]}</span>
+                  <span>📍 {getScheduleField(item, 'place', lang)}</span>
                 </div>
               </article>
             ))}
@@ -5639,13 +5698,13 @@ export default function App() {
       <footer className="minimal-footer">
         <span>© 2026 Stepless</span>
         <span>·</span>
-        <a href="/about.html">{lang === 'KR' ? '서비스 소개' : 'About'}</a>
+        <a href="/about.html">{t.footerAbout}</a>
         <span>·</span>
-        <a href="/privacy.html">{lang === 'KR' ? '개인정보처리방침' : 'Privacy Policy'}</a>
+        <a href="/privacy.html">{t.footerPrivacy}</a>
         <span>·</span>
-        <a href="/terms.html">{lang === 'KR' ? '이용약관' : 'Terms'}</a>
+        <a href="/terms.html">{t.footerTerms}</a>
         <span>·</span>
-        <a href="mailto:floreur88@gmail.com">{lang === 'KR' ? '문의' : 'Contact'}</a>
+        <a href="mailto:floreur88@gmail.com">{t.footerContact}</a>
       </footer>
     </>
   );
