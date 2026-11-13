@@ -24,6 +24,7 @@ import {
   getScheduleField,
 } from './i18n';
 import { StampTourSection } from './components/StampTourSection';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
 type MainTab = 'home' | 'courses' | 'schedule';
 type CourseCategoryTab =
   | 'itinerary'
@@ -4382,6 +4383,82 @@ export default function App() {
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
   const [livePetItems, setLivePetItems] = useState<CuratedCourseItem[]>([]);
 
+  // 스탬프 투어 리뷰 관리자 모드 상태
+  const [adminPin, setAdminPin] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem('stepless_stamp_admin_pin_v1');
+    } catch {
+      return null;
+    }
+  });
+  const isAdminMode = Boolean(adminPin);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState<boolean>(false);
+  const [adminPinInput, setAdminPinInput] = useState<string>('');
+  const [adminPinError, setAdminPinError] = useState<string | null>(null);
+  const [isVerifyingAdmin, setIsVerifyingAdmin] = useState<boolean>(false);
+
+  const handleToggleAdminBtn = () => {
+    if (isAdminMode) {
+      setAdminPin(null);
+      try {
+        sessionStorage.removeItem('stepless_stamp_admin_pin_v1');
+      } catch {
+        // ignore
+      }
+      return;
+    }
+    setAdminPinInput('');
+    setAdminPinError(null);
+    setIsAdminModalOpen(true);
+  };
+
+  const handleAdminPinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = adminPinInput.trim();
+    if (!trimmed) return;
+
+    setIsVerifyingAdmin(true);
+    setAdminPinError(null);
+
+    try {
+      let verified = false;
+      if (isSupabaseConfigured && supabase) {
+        const { data, error } = await supabase.rpc('verify_stamp_admin_pin', {
+          p_pin: trimmed,
+        });
+        if (!error && data === true) {
+          verified = true;
+        }
+      }
+
+      if (!verified) {
+        setAdminPinError(
+          lang === 'KR'
+            ? '비밀번호가 일치하지 않습니다.'
+            : 'Incorrect administrator password.',
+        );
+        setIsVerifyingAdmin(false);
+        return;
+      }
+
+      setAdminPin(trimmed);
+      try {
+        sessionStorage.setItem('stepless_stamp_admin_pin_v1', trimmed);
+      } catch {
+        // ignore
+      }
+      setIsAdminModalOpen(false);
+      setAdminPinInput('');
+
+      // 스탬프 투어 화면이 아니라면 즉시 스탬프 투어로 이동하여 바로 리뷰를 관리할 수 있도록 연결
+      if (activeTab !== 'courses' || courseCategory !== 'stamp') {
+        navigateToPath('/courses/stamp');
+      }
+    } finally {
+      setIsVerifyingAdmin(false);
+    }
+  };
+
   // 한국관광공사_반려동물_동반여행_서비스 (KorPetTourService2) 실시간 신규 데이터 자동 동기화
   useEffect(() => {
     if (activeTab !== 'courses' || courseCategory !== 'pet') return;
@@ -4704,78 +4781,145 @@ export default function App() {
           </a>
         </nav>
 
-        {/* Compact Language Selector Button + Dropdown Popover (7 Languages) */}
-        <div className="lang-dropdown" ref={langMenuRef}>
+        {/* Compact Language Selector + Admin Mode Button */}
+        <div className="header-right-actions">
+          <div className="lang-dropdown" ref={langMenuRef}>
+            <button
+              type="button"
+              className={`lang-dropdown-btn ${isLangMenuOpen ? 'open' : ''}`}
+              aria-label={t.langButtonAria}
+              aria-haspopup="listbox"
+              aria-expanded={isLangMenuOpen}
+              onClick={() => setIsLangMenuOpen((prev) => !prev)}
+            >
+              <svg
+                className="lang-globe-icon"
+                viewBox="0 0 20 20"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="7.8"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                />
+                <ellipse
+                  cx="10"
+                  cy="10"
+                  rx="3.6"
+                  ry="7.8"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M2.6 10h14.8M4.2 6.2h11.6M4.2 13.8h11.6"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="lang-current-label">{currentLangOption.nativeName}</span>
+              <span className="lang-chevron" aria-hidden="true">
+                ▾
+              </span>
+            </button>
+
+            {isLangMenuOpen && (
+              <ul
+                className="lang-dropdown-menu"
+                role="listbox"
+                aria-label="Language selection"
+              >
+                {LANGUAGE_OPTIONS.map((option) => {
+                  const isSelected = option.code === lang;
+                  return (
+                    <li key={option.code} role="option" aria-selected={isSelected}>
+                      <button
+                        type="button"
+                        className={`lang-dropdown-item ${isSelected ? 'active' : ''}`}
+                        onClick={() => {
+                          setLang(option.code);
+                          setIsLangMenuOpen(false);
+                        }}
+                      >
+                        <span className="lang-item-native">{option.nativeName}</span>
+                        <span className="lang-item-code">
+                          {isSelected ? '✓' : option.shortLabel}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
           <button
             type="button"
-            className={`lang-dropdown-btn ${isLangMenuOpen ? 'open' : ''}`}
-            aria-label={t.langButtonAria}
-            aria-haspopup="listbox"
-            aria-expanded={isLangMenuOpen}
-            onClick={() => setIsLangMenuOpen((prev) => !prev)}
+            className={`admin-mode-btn ${isAdminMode ? 'active' : ''}`}
+            onClick={handleToggleAdminBtn}
+            title={
+              isAdminMode
+                ? lang === 'KR'
+                  ? '클릭하면 관리자 모드를 종료합니다'
+                  : 'Click to exit admin mode'
+                : lang === 'KR'
+                  ? '스탬프 투어 리뷰 관리자 모드'
+                  : 'Stamp Tour Review Admin Mode'
+            }
           >
             <svg
-              className="lang-globe-icon"
+              className="admin-lock-icon"
               viewBox="0 0 20 20"
               fill="none"
               aria-hidden="true"
             >
-              <circle
-                cx="10"
-                cy="10"
-                r="7.8"
+              <rect
+                x="4.2"
+                y="9"
+                width="11.6"
+                height="8.4"
+                rx="2.2"
                 stroke="currentColor"
                 strokeWidth="1.7"
               />
-              <ellipse
-                cx="10"
-                cy="10"
-                rx="3.6"
-                ry="7.8"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M2.6 10h14.8M4.2 6.2h11.6M4.2 13.8h11.6"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-              />
+              {isAdminMode ? (
+                <path
+                  d="M7 9V6.4a3 3 0 0 1 5.6-1.5"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              ) : (
+                <path
+                  d="M7 9V6.5a3 3 0 0 1 6 0V9"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              )}
+              <circle cx="10" cy="13.2" r="1.15" fill="currentColor" />
             </svg>
-            <span className="lang-current-label">{currentLangOption.nativeName}</span>
-            <span className="lang-chevron" aria-hidden="true">
-              ▾
+            <span>
+              {lang === 'KR'
+                ? isAdminMode
+                  ? '관리자 ON'
+                  : '관리자'
+                : lang === 'JA'
+                  ? isAdminMode
+                    ? '管理者 ON'
+                    : '管理者'
+                  : lang === 'ZH'
+                    ? isAdminMode
+                      ? '管理员 ON'
+                      : '管理员'
+                    : isAdminMode
+                      ? 'Admin ON'
+                      : 'Admin'}
             </span>
           </button>
-
-          {isLangMenuOpen && (
-            <ul
-              className="lang-dropdown-menu"
-              role="listbox"
-              aria-label="Language selection"
-            >
-              {LANGUAGE_OPTIONS.map((option) => {
-                const isSelected = option.code === lang;
-                return (
-                  <li key={option.code} role="option" aria-selected={isSelected}>
-                    <button
-                      type="button"
-                      className={`lang-dropdown-item ${isSelected ? 'active' : ''}`}
-                      onClick={() => {
-                        setLang(option.code);
-                        setIsLangMenuOpen(false);
-                      }}
-                    >
-                      <span className="lang-item-native">{option.nativeName}</span>
-                      <span className="lang-item-code">
-                        {isSelected ? '✓' : option.shortLabel}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
         </div>
       </header>
 
@@ -5561,6 +5705,15 @@ export default function App() {
           {courseCategory === 'stamp' ? (
             <StampTourSection
               lang={lang}
+              adminPin={adminPin}
+              onExitAdminMode={() => {
+                setAdminPin(null);
+                try {
+                  sessionStorage.removeItem('stepless_stamp_admin_pin_v1');
+                } catch {
+                  // ignore
+                }
+              }}
               whaleMascot={
                 <svg viewBox="0 0 215 170" role="img" aria-label={t.whaleAria}>
                   <WhaleInnerGroup mood="happy" />
@@ -5706,6 +5859,98 @@ export default function App() {
         <span>·</span>
         <a href="mailto:floreur88@gmail.com">{t.footerContact}</a>
       </footer>
+
+      {isAdminModalOpen && (
+        <div
+          className="stamp-auth-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label={lang === 'KR' ? '관리자 모드 인증' : 'Admin Mode Authentication'}
+          onClick={() => setIsAdminModalOpen(false)}
+        >
+          <form
+            className="stamp-auth-modal-card admin-pin-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleAdminPinSubmit}
+          >
+            <div className="stamp-auth-modal-top">
+              <span className="stamp-auth-icon-badge" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <rect
+                    x="4.2"
+                    y="9"
+                    width="11.6"
+                    height="8.4"
+                    rx="2.2"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  />
+                  <path
+                    d="M7 9V6.5a3 3 0 0 1 6 0V9"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+              <button
+                type="button"
+                className="stamp-auth-close-x"
+                onClick={() => setIsAdminModalOpen(false)}
+                aria-label={lang === 'KR' ? '닫기' : 'Close'}
+              >
+                ✕
+              </button>
+            </div>
+
+            <h3 className="stamp-auth-modal-title">
+              {lang === 'KR' ? '관리자 모드 인증' : 'Admin Mode'}
+            </h3>
+            <p className="stamp-auth-modal-desc">
+              {lang === 'KR'
+                ? '스탬프 투어에 등록된 방문자 리뷰를 수정·삭제할 수 있습니다. 관리자 비밀번호를 입력해 주세요.'
+                : 'Enter the administrator password to edit or delete Stamp Tour reviews.'}
+            </p>
+
+            <input
+              type="password"
+              inputMode="numeric"
+              autoFocus
+              maxLength={12}
+              className="admin-pin-input"
+              placeholder={lang === 'KR' ? '비밀번호 4자리' : 'Password'}
+              value={adminPinInput}
+              onChange={(e) => {
+                setAdminPinInput(e.target.value);
+                if (adminPinError) setAdminPinError(null);
+              }}
+            />
+
+            {adminPinError && <p className="stamp-auth-error">{adminPinError}</p>}
+
+            <div className="admin-pin-actions">
+              <button
+                type="button"
+                className="admin-pin-cancel-btn"
+                onClick={() => setIsAdminModalOpen(false)}
+              >
+                {lang === 'KR' ? '취소' : 'Cancel'}
+              </button>
+              <button
+                type="submit"
+                className="admin-pin-submit-btn"
+                disabled={isVerifyingAdmin || !adminPinInput.trim()}
+              >
+                {isVerifyingAdmin
+                  ? '...'
+                  : lang === 'KR'
+                    ? '관리자 모드 켜기'
+                    : 'Unlock'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </>
   );
 }

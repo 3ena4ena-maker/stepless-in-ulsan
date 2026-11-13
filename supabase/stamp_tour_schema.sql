@@ -71,3 +71,47 @@ grant usage on schema public to anon, authenticated;
 grant select on public.stamp_reviews to anon, authenticated;
 grant insert, delete on public.stamp_reviews to authenticated;
 grant select, insert, update on public.user_stamps to authenticated;
+
+
+-- =====================================================================
+-- 관리자 모드 (비밀번호 해시 검증 & 모든 방문자/샘플 리뷰 수정·삭제 RPC)
+-- =====================================================================
+
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+
+create table if not exists private.stamp_admin_auth (
+  id smallint primary key default 1 check (id = 1),
+  pin_hash text not null,
+  updated_at timestamptz not null default now()
+);
+
+revoke all on table private.stamp_admin_auth from public, anon, authenticated;
+
+create table if not exists public.stamp_seed_overrides (
+  seed_id text primary key check (char_length(seed_id) between 1 and 40),
+  author_name text not null check (char_length(author_name) between 1 and 40),
+  rating smallint not null check (rating >= 1 and rating <= 5),
+  comment text not null default '' check (char_length(comment) <= 300),
+  is_deleted boolean not null default false,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.stamp_seed_overrides enable row level security;
+
+create policy "Anyone can read stamp seed overrides"
+  on public.stamp_seed_overrides
+  for select
+  to anon, authenticated
+  using (true);
+
+grant select on public.stamp_seed_overrides to anon, authenticated;
+
+create policy "Users can update own review"
+  on public.stamp_reviews
+  for update
+  to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+
+grant update on public.stamp_reviews to authenticated;

@@ -842,11 +842,26 @@ function Space3DPreviewArt({ place }: { place: StampPlaceItem }) {
 interface StampTourSectionProps {
   lang: Lang;
   whaleMascot: React.ReactNode;
+  adminPin?: string | null;
+  onExitAdminMode?: () => void;
 }
 
-export function StampTourSection({ lang, whaleMascot }: StampTourSectionProps) {
+export function StampTourSection({
+  lang,
+  whaleMascot,
+  adminPin,
+  onExitAdminMode,
+}: StampTourSectionProps) {
   const ui = STAMP_UI[lang];
   const globalUi = UI_TEXT[lang];
+  const isAdminMode = Boolean(adminPin);
+
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editAuthor, setEditAuthor] = useState<string>('');
+  const [editRating, setEditRating] = useState<number>(5);
+  const [editComment, setEditComment] = useState<string>('');
+  const [isSavingEdit, setIsSavingEdit] = useState<boolean>(false);
+  const [adminActionError, setAdminActionError] = useState<string | null>(null);
 
   const [authUser, setAuthUser] = useState<StampAuthUser | null>(() => {
     if (isSupabaseConfigured) return null;
@@ -1033,22 +1048,45 @@ export function StampTourSection({ lang, whaleMascot }: StampTourSectionProps) {
     };
 
     const fetchPublicReviews = async () => {
-      const { data, error } = await client
-        .from('stamp_reviews')
-        .select('id, place_id, user_id, author_name, rating, comment, created_at')
-        .order('created_at', { ascending: false });
+      const [reviewsRes, seedRes] = await Promise.all([
+        client
+          .from('stamp_reviews')
+          .select('id, place_id, user_id, author_name, rating, comment, created_at')
+          .order('created_at', { ascending: false }),
+        client
+          .from('stamp_seed_overrides')
+          .select('seed_id, author_name, rating, comment, is_deleted'),
+      ]);
 
-      if (error || !data) return;
+      if (reviewsRes.error || !reviewsRes.data) return;
 
-      const grouped: Record<string, StampReviewItem[]> = {
-        ...INITIAL_REVIEWS,
-      };
+      const seedMap = new Map<
+        string,
+        { author_name: string; rating: number; comment: string; is_deleted: boolean }
+      >();
+      for (const s of seedRes.data || []) {
+        seedMap.set(s.seed_id, s);
+      }
+
+      const grouped: Record<string, StampReviewItem[]> = {};
       for (const place of STAMP_PLACES) {
-        grouped[place.id] = [...(INITIAL_REVIEWS[place.id] || [])];
+        const baseList = INITIAL_REVIEWS[place.id] || [];
+        grouped[place.id] = baseList
+          .filter((item) => !seedMap.get(item.id)?.is_deleted)
+          .map((item) => {
+            const ov = seedMap.get(item.id);
+            if (!ov) return item;
+            return {
+              ...item,
+              author: ov.author_name,
+              rating: ov.rating,
+              comment: ov.comment || '',
+            };
+          });
       }
 
       const dbGrouped: Record<string, StampReviewItem[]> = {};
-      for (const row of data) {
+      for (const row of reviewsRes.data) {
         const dt = new Date(row.created_at);
         const dStr = `${dt.getFullYear()}.${String(dt.getMonth() + 1).padStart(2, '0')}`;
         const item: StampReviewItem = {
@@ -1252,13 +1290,87 @@ export function StampTourSection({ lang, whaleMascot }: StampTourSectionProps) {
     }
   };
 
+  const handleStartEditReview = (rev: StampReviewItem) => {
+    setAdminActionError(null);
+    setEditingReviewId(rev.id);
+    setEditAuthor(rev.author);
+    setEditRating(rev.rating);
+    setEditComment(rev.comment);
+  };
+
+  const handleCancelEditReview = () => {
+    setEditingReviewId(null);
+    setAdminActionError(null);
+  };
+
+  const handleSaveEditReview = async (placeId: string, reviewId: string) => {
+    const cleanAuthor = editAuthor.trim();
+    const cleanComment = editComment.trim();
+    if (!cleanAuthor) return;
+
+    setAdminActionError(null);
+    setIsSavingEdit(true);
+
+    try {
+      if (isAdminMode && adminPin && supabase) {
+        const { data, error } = await supabase.rpc('admin_update_stamp_review', {
+          p_pin: adminPin,
+          p_review_id: reviewId,
+          p_author_name: cleanAuthor,
+          p_rating: editRating,
+          p_comment: cleanComment,
+        });
+        if (error || !data) {
+          setAdminActionError(
+            lang === 'KR'
+              ? '리뷰 수정 저장에 실패했습니다. 관리자 비밀번호를 다시 확인해 주세요.'
+              : 'Failed to save review changes.',
+          );
+          return;
+        }
+      }
+
+      setReviewsByPlace((prev) => ({
+        ...prev,
+        [placeId]: (prev[placeId] || []).map((r) =>
+          r.id === reviewId
+            ? {
+                ...r,
+                author: cleanAuthor,
+                rating: editRating,
+                comment: cleanComment,
+              }
+            : r,
+        ),
+      }));
+      setEditingReviewId(null);
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
   const handleDeleteReview = async (placeId: string, reviewId: string) => {
-    if (supabase && authUser && authUser.provider !== 'demo') {
+    setAdminActionError(null);
+    if (isAdminMode && adminPin && supabase) {
+      const { error } = await supabase.rpc('admin_delete_stamp_review', {
+        p_pin: adminPin,
+        p_review_id: reviewId,
+      });
+      if (error) {
+        setAdminActionError(
+          lang === 'KR' ? '리뷰 삭제에 실패했습니다.' : 'Failed to delete review.',
+        );
+        return;
+      }
+    } else if (supabase && authUser && authUser.provider !== 'demo') {
       await supabase
         .from('stamp_reviews')
         .delete()
         .eq('id', reviewId)
         .eq('user_id', authUser.id);
+    }
+    if (editingReviewId === reviewId) {
+      setEditingReviewId(null);
     }
     setReviewsByPlace((prev) => ({
       ...prev,
@@ -1346,27 +1458,48 @@ export function StampTourSection({ lang, whaleMascot }: StampTourSectionProps) {
             </span>
           </div>
 
-          {authUser ? (
-            <span className="stamp-auth-user-pill">
-              <strong>{authUser.displayName}</strong>
+          <div className="stamp-review-head-right">
+            {isAdminMode && (
+              <span className="stamp-admin-badge">
+                <span>{lang === 'KR' ? '관리자 편집 모드' : 'Admin Edit'}</span>
+                {onExitAdminMode && (
+                  <button
+                    type="button"
+                    className="stamp-admin-exit-btn"
+                    onClick={onExitAdminMode}
+                  >
+                    {lang === 'KR' ? '종료' : 'Exit'}
+                  </button>
+                )}
+              </span>
+            )}
+
+            {authUser ? (
+              <span className="stamp-auth-user-pill">
+                <strong>{authUser.displayName}</strong>
+                <button
+                  type="button"
+                  className="stamp-auth-logout-btn"
+                  onClick={handleSignOut}
+                >
+                  {ui.logoutMiniBtn}
+                </button>
+              </span>
+            ) : (
               <button
                 type="button"
-                className="stamp-auth-logout-btn"
-                onClick={handleSignOut}
+                className="stamp-auth-login-chip"
+                onClick={() => setIsAuthModalOpen(true)}
               >
-                {ui.logoutMiniBtn}
+                {ui.loginMiniBtn}
               </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              className="stamp-auth-login-chip"
-              onClick={() => setIsAuthModalOpen(true)}
-            >
-              {ui.loginMiniBtn}
-            </button>
-          )}
+            )}
+          </div>
         </div>
+
+        {adminActionError && (
+          <p className="stamp-auth-error">{adminActionError}</p>
+        )}
 
         <form
           className={`stamp-review-form ${nudgeReviewForm ? 'nudge' : ''}`}
@@ -1416,32 +1549,120 @@ export function StampTourSection({ lang, whaleMascot }: StampTourSectionProps) {
           <p className="stamp-review-empty">{ui.emptyReviewText}</p>
         ) : (
           <ul className="stamp-review-list">
-            {list.map((rev) => (
-              <li key={rev.id} className="stamp-review-item">
-                <div
-                  className="stamp-review-meta"
-                  style={!rev.comment ? { marginBottom: 0 } : undefined}
+            {list.map((rev) => {
+              const isEditingThis = isAdminMode && editingReviewId === rev.id;
+              const canDelete =
+                isAdminMode || Boolean(authUser && rev.userId === authUser.id);
+
+              return (
+                <li
+                  key={rev.id}
+                  className={`stamp-review-item ${isEditingThis ? 'editing' : ''}`}
                 >
-                  <strong className="stamp-rev-author">{rev.author}</strong>
-                  <span className="stamp-rev-stars" aria-label={`${rev.rating} / 5`}>
-                    {Array.from({ length: 5 }).map((_, idx) => (
-                      <StarMonoIcon key={idx} filled={idx < rev.rating} />
-                    ))}
-                  </span>
-                  <span className="stamp-rev-date">{rev.date}</span>
-                  {authUser && rev.userId === authUser.id && (
-                    <button
-                      type="button"
-                      className="stamp-rev-del-btn"
-                      onClick={() => handleDeleteReview(place.id, rev.id)}
-                    >
-                      {ui.deleteReviewBtn}
-                    </button>
+                  {isEditingThis ? (
+                    <div className="stamp-review-edit-box">
+                      <div className="stamp-review-edit-top">
+                        <input
+                          type="text"
+                          className="stamp-input-author edit"
+                          maxLength={20}
+                          value={editAuthor}
+                          onChange={(e) => setEditAuthor(e.target.value)}
+                          placeholder={ui.nicknamePlaceholder}
+                        />
+                        <div
+                          className="stamp-star-picker"
+                          role="radiogroup"
+                          aria-label="별점 수정"
+                        >
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              className={`stamp-star-btn ${
+                                star <= editRating ? 'on' : ''
+                              }`}
+                              onClick={() => setEditRating(star)}
+                              aria-label={`${star}점`}
+                            >
+                              <StarMonoIcon filled={star <= editRating} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        className="stamp-input-comment edit"
+                        maxLength={120}
+                        value={editComment}
+                        onChange={(e) => setEditComment(e.target.value)}
+                        placeholder={ui.commentPlaceholder}
+                      />
+                      <div className="stamp-review-edit-actions">
+                        <button
+                          type="button"
+                          className="stamp-edit-cancel-btn"
+                          onClick={handleCancelEditReview}
+                        >
+                          {lang === 'KR' ? '취소' : 'Cancel'}
+                        </button>
+                        <button
+                          type="button"
+                          className="stamp-edit-save-btn"
+                          disabled={isSavingEdit || !editAuthor.trim()}
+                          onClick={() => handleSaveEditReview(place.id, rev.id)}
+                        >
+                          {isSavingEdit
+                            ? '...'
+                            : lang === 'KR'
+                              ? '수정 저장'
+                              : 'Save'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        className="stamp-review-meta"
+                        style={!rev.comment ? { marginBottom: 0 } : undefined}
+                      >
+                        <strong className="stamp-rev-author">{rev.author}</strong>
+                        <span
+                          className="stamp-rev-stars"
+                          aria-label={`${rev.rating} / 5`}
+                        >
+                          {Array.from({ length: 5 }).map((_, idx) => (
+                            <StarMonoIcon key={idx} filled={idx < rev.rating} />
+                          ))}
+                        </span>
+                        <span className="stamp-rev-date">{rev.date}</span>
+                        {isAdminMode && (
+                          <button
+                            type="button"
+                            className="stamp-rev-edit-btn"
+                            onClick={() => handleStartEditReview(rev)}
+                          >
+                            {lang === 'KR' ? '수정' : 'Edit'}
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            type="button"
+                            className="stamp-rev-del-btn"
+                            onClick={() => handleDeleteReview(place.id, rev.id)}
+                          >
+                            {ui.deleteReviewBtn}
+                          </button>
+                        )}
+                      </div>
+                      {rev.comment && (
+                        <p className="stamp-rev-comment">{rev.comment}</p>
+                      )}
+                    </>
                   )}
-                </div>
-                {rev.comment && <p className="stamp-rev-comment">{rev.comment}</p>}
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
